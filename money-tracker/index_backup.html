@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Money Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:#080b12; --surface:#0e1117; --card:#131720; --card2:#161b27;
+  --border:#1e2535; --border-glow:#2a3550; --text:#e2e8f0; --muted:#64748b; --subtle:#334155;
+  --accent:#6366f1; --accent2:#818cf8;
+  --green:#10b981; --green2:#34d399; --red:#ef4444; --red2:#f87171;
+  --amber:#f59e0b; --amber2:#fbbf24; --blue:#3b82f6; --purple:#a855f7; --cyan:#06b6d4;
+  --r:10px; --r-lg:16px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text);
+  min-height:100vh; line-height:1.5;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%,rgba(99,102,241,.08) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%,rgba(16,185,129,.04) 0%,transparent 50%);
+}
+
+/* TOP BAR */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 28px; background:rgba(13,17,23,.9); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border); position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{
+  width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.logo-text{font-size:16px;font-weight:700;letter-spacing:-.3px;}
+.logo-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.topbar-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 13px;border-radius:8px;border:none;cursor:pointer;
+  font-size:12.5px;font-weight:500;font-family:inherit;transition:all .15s ease;
+}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent2);box-shadow:0 0 16px rgba(99,102,241,.35);}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{background:rgba(255,255,255,.09);border-color:var(--border-glow);}
+.btn-danger{background:rgba(239,68,68,.12);color:var(--red2);border:1px solid rgba(239,68,68,.22);}
+.btn-danger:hover{background:rgba(239,68,68,.22);}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:7px;}
+.btn-add{
+  background:rgba(99,102,241,.08);color:var(--accent2);
+  border:1px dashed rgba(99,102,241,.28);
+  width:100%;margin-top:6px;justify-content:center;border-radius:8px;
+}
+.btn-add:hover{background:rgba(99,102,241,.18);}
+.btn-success{background:rgba(16,185,129,.12);color:var(--green2);border:1px solid rgba(16,185,129,.2);}
+.btn-success:hover{background:rgba(16,185,129,.25);}
+.btn-success.dirty{background:rgba(16,185,129,.28);color:#fff;box-shadow:0 0 12px rgba(16,185,129,.25);}
+
+/* DRAG & DROP */
+.drag-handle-col{width:18px;text-align:center;}
+.drag-handle{color:var(--subtle);font-size:15px;cursor:grab;user-select:none;display:inline-block;padding:0 2px;line-height:1;}
+.drag-handle:hover{color:var(--accent2);}
+.draggable-row.is-dragging{opacity:.3;background:rgba(99,102,241,.08);}
+.draggable-row.drag-over{box-shadow:inset 0 -2px 0 var(--accent2);}
+.drop-zone-active{background:rgba(99,102,241,.05) !important;outline:1px dashed rgba(99,102,241,.3);border-radius:4px;}
+.file-status{
+  font-size:11px;color:var(--muted);
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  padding:4px 10px;border-radius:20px;white-space:nowrap;
+}
+
+/* STAT STRIP */
+.stat-strip{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));
+  gap:12px;padding:20px 28px;
+}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:16px 18px;position:relative;overflow:hidden;transition:border-color .2s;
+}
+.stat-card::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;opacity:0;
+  background:radial-gradient(circle at 50% 0%,var(--glow,transparent) 0%,transparent 70%);
+  transition:opacity .3s;
+}
+.stat-card:hover::before{opacity:1;}
+.stat-card:hover{border-color:var(--border-glow);}
+.stat-card.s-income {--glow:rgba(16,185,129,.14);}
+.stat-card.s-expense{--glow:rgba(239,68,68,.14);}
+.stat-card.s-balance{--glow:rgba(99,102,241,.14);}
+.stat-card.s-bank   {--glow:rgba(59,130,246,.14);}
+.stat-card.s-receive{--glow:rgba(245,158,11,.14);}
+.stat-label{font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
+.stat-value{font-size:21px;font-weight:700;margin-top:4px;letter-spacing:-.5px;}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.c-green{color:#34d399;} .c-red{color:#f87171;} .c-blue{color:#60a5fa;}
+.c-amber{color:#fbbf24;} .c-purple{color:#c084fc;} .c-cyan{color:#22d3ee;}
+
+/* PAGE */
+.page{padding:0 28px 48px;}
+.section-title{
+  font-size:10.5px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.8px;
+  margin:24px 0 12px;display:flex;align-items:center;gap:9px;
+}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:1100px){.grid3{grid-template-columns:1fr 1fr;}}
+@media(max-width:800px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+/* CARD */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r-lg);overflow:hidden;transition:border-color .2s,box-shadow .2s;
+}
+.card:hover{border-color:var(--border-glow);}
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 15px 11px;border-bottom:1px solid var(--border);
+}
+.card-header-left{display:flex;align-items:center;gap:10px;}
+.card-icon{
+  width:30px;height:30px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;
+}
+.card-title{font-size:13.5px;font-weight:600;}
+.card-sub{font-size:11px;color:var(--muted);}
+.card-total{font-size:18px;font-weight:700;letter-spacing:-.4px;}
+.card-body{padding:12px 15px;}
+
+/* PERIOD BADGE */
+.period-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:20px;padding:3px 10px;font-size:11px;color:var(--muted);margin-bottom:10px;
+}
+.period-badge input{
+  background:none;border:none;color:var(--muted);
+  font-size:11px;font-family:inherit;outline:none;width:80px;
+}
+
+/* TABLE */
+.entry-table{width:100%;border-collapse:collapse;}
+.entry-table tr:last-child td{border-bottom:none;}
+.entry-table td{border-bottom:1px solid rgba(255,255,255,.04);padding:3px 2px;}
+.entry-table td.amt-col{width:88px;}
+.entry-table td.del-col{width:24px;text-align:right;}
+.entry-table td.note-col{width:106px;}
+
+input[type=text],input[type=number]{
+  width:100%;background:rgba(255,255,255,.04);border:1px solid transparent;
+  color:var(--text);padding:5px 7px;border-radius:6px;
+  font-size:12.5px;font-family:inherit;outline:none;transition:border-color .15s,background .15s;
+}
+input[type=text]:focus,input[type=number]:focus{
+  border-color:var(--accent);background:rgba(99,102,241,.08);
+}
+input[type=number]{text-align:right;}
+input::placeholder{color:var(--subtle);}
+.del-btn{
+  background:none;border:none;color:var(--subtle);cursor:pointer;
+  font-size:15px;line-height:1;padding:2px 4px;border-radius:4px;transition:color .15s,background .15s;
+}
+.del-btn:hover{color:var(--red2);background:rgba(239,68,68,.1);}
+
+/* QUICK ADD */
+.quick-add{
+  display:flex;gap:6px;margin-top:10px;
+  padding-top:10px;border-top:1px solid rgba(255,255,255,.04);
+}
+.quick-add input{flex:1;}
+
+/* BALANCE */
+.bal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
+.bal-field label{display:block;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.bal-hint{
+  margin-top:10px;padding:8px 12px;
+  background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.15);
+  border-radius:8px;font-size:11px;color:var(--accent2);line-height:1.5;
+}
+
+/* OUTPUT */
+.output-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;}
+.output-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 15px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);
+}
+.output-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;}
+textarea.output{
+  width:100%;min-height:220px;
+  background:#080b12;color:#94a3b8;border:none;
+  padding:14px 16px;font-family:'Cascadia Code','Fira Code',Consolas,monospace;
+  font-size:12px;line-height:1.7;resize:vertical;
+}
+textarea.output:focus{outline:none;}
+
+/* COPY BADGE */
+.copy-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  color:var(--green2);font-size:11px;opacity:0;transition:opacity .3s;margin-left:6px;
+}
+.copy-badge.show{opacity:1;}
+
+/* ICON STYLES */
+.ic-income {background:rgba(16,185,129,.12);color:#34d399;}
+.ic-expense{background:rgba(239,68,68,.12); color:#f87171;}
+.ic-balance{background:rgba(99,102,241,.12);color:#818cf8;}
+.ic-bank   {background:rgba(59,130,246,.12);color:#60a5fa;}
+.ic-receive{background:rgba(245,158,11,.12);color:#fbbf24;}
+.ic-cab    {background:rgba(168,85,247,.12); color:#c084fc;}
+.ic-cab2   {background:rgba(6,182,212,.12);  color:#22d3ee;}
+
+/* BALANCE BAR */
+.balance-bar{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:13px 18px;
+  margin-bottom:0;
+}
+.bal-field-inline{display:flex;align-items:center;gap:8px;}
+.bal-field-inline label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.bal-field-inline input{width:110px;}
+.bal-computed{
+  flex:1;text-align:right;font-size:11px;color:var(--accent2);
+  padding:6px 12px;background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.14);
+  border-radius:8px;min-width:180px;
+}
+
+/* PERIOD BLOCKS */
+.period-block{
+  border:1px solid rgba(255,255,255,.07);border-radius:10px;
+  overflow:hidden;margin-bottom:10px;
+  background:rgba(255,255,255,.015);
+}
+.period-block:last-of-type{margin-bottom:0;}
+.period-header{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;
+  background:rgba(255,255,255,.03);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.period-name-input{
+  flex:1;background:none;border:1px solid transparent;
+  color:var(--text);font-size:12px;font-weight:600;
+  font-family:inherit;outline:none;padding:3px 5px;border-radius:5px;
+  transition:border-color .15s,background .15s;
+}
+.period-name-input:focus{background:rgba(99,102,241,.1);border-color:var(--accent);}
+.period-subtotal{font-size:13px;font-weight:700;letter-spacing:-.3px;white-space:nowrap;}
+.period-body{padding:8px 10px 4px;}
+.period-quick-add{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04);}
+.period-quick-add input{flex:1;}
+.period-del{background:none;border:none;color:var(--subtle);cursor:pointer;font-size:14px;padding:2px 5px;border-radius:4px;transition:color .15s,background .15s;}
+.period-del:hover{color:var(--red2);background:rgba(239,68,68,.1);}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-glow);border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-icon">💰</div>
+    <div>
+      <div class="logo-text">Money Tracker</div>
+      <div class="logo-sub">Personal Finance Dashboard</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <span class="file-status" id="fileStatus">Auto-saved to browser</span>
+    <button class="btn btn-ghost btn-sm" id="btnUndo" disabled>↩ Undo</button>
+    <button class="btn btn-ghost btn-sm" id="btnOpen">📂 Open</button>
+    <button class="btn btn-success btn-sm" id="btnCommit">💾 Save</button>
+    <button class="btn btn-ghost btn-sm" id="btnSaveFile">📄 Save File</button>
+    <button class="btn btn-ghost btn-sm" id="btnSaveAs">Save As</button>
+    <button class="btn btn-danger btn-sm" id="btnNewPeriod">🔄 New Period</button>
+    <input type="file" id="fileInput" accept="application/json" style="display:none;">
+  </div>
+</header>
+
+<!-- STAT STRIP -->
+<div class="stat-strip">
+  <div class="stat-card s-income">
+    <div class="stat-label">Total Income</div>
+    <div class="stat-value c-green" id="statIncome">₹0</div>
+    <div class="stat-sub" id="statIncomeSub">0 entries</div>
+  </div>
+  <div class="stat-card s-expense">
+    <div class="stat-label">Total Expense</div>
+    <div class="stat-value c-red" id="statExpense">₹0</div>
+    <div class="stat-sub" id="statExpenseSub">0 entries</div>
+  </div>
+  <div class="stat-card s-balance">
+    <div class="stat-label">Net Balance</div>
+    <div class="stat-value c-purple" id="statBalance">₹0</div>
+    <div class="stat-sub" id="statBalSub">Income − Expense</div>
+  </div>
+  <div class="stat-card s-bank">
+    <div class="stat-label">Total in Banks</div>
+    <div class="stat-value c-blue" id="statBank">₹0</div>
+    <div class="stat-sub">Across all accounts</div>
+  </div>
+  <div class="stat-card s-receive">
+    <div class="stat-label">Will Receive</div>
+    <div class="stat-value c-amber" id="statReceivable">₹0</div>
+    <div class="stat-sub">Pending receivables</div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- Balance bar — always visible, compact -->
+  <div class="balance-bar" style="margin-bottom:0;">
+    <div class="bal-field-inline">
+      <label>⚖️ Updated On</label>
+      <input type="text" id="balanceDate" placeholder="31st July" style="width:100px;">
+    </div>
+    <div class="bal-field-inline">
+      <label>Curr. Balance ₹</label>
+      <input type="number" id="currBal" placeholder="0" style="width:110px;">
+    </div>
+    <div class="bal-computed" id="balHint">Set balance and entries to see computed diff</div>
+  </div>
+
+  <div class="section-title">📥 Income &amp; 📤 Expense</div>
+  <div class="grid2">
+    <!-- Income -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon ic-income">📥</div>
+          <div>
+            <div class="card-title">Income</div>
+            <div class="card-sub" id="incomeSub">0 entries</div>
+          </div>
+        </div>
+        <div class="card-total c-green" id="totalIncome">₹0</div>
+      </div>
+      <div class="card-body">
+        <div id="incomePeriodsContainer"></div>
+        <button class="btn btn-add" style="margin-top:8px;" onclick="addPeriod('income')">+ New Period</button>
+      </div>
+    </div>
+    <!-- Expense -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon ic-expense">📤</div>
+          <div>
+            <div class="card-title">Expense</div>
+            <div class="card-sub" id="expenseSub">0 entries</div>
+          </div>
+        </div>
+        <div class="card-total c-red" id="totalExpense">₹0</div>
+      </div>
+      <div class="card-body">
+        <div id="expensePeriodsContainer"></div>
+        <button class="btn btn-add" style="margin-top:8px;" onclick="addPeriod('expense')">+ New Period</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">🏦 Bank &amp; Receivables</div>
+  <div class="grid2">
+    <!-- Bank -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon ic-bank">🏦</div>
+          <div>
+            <div class="card-title">Bank Accounts</div>
+            <div class="card-sub" id="bankSub">—</div>
+          </div>
+        </div>
+        <div class="card-total c-blue" id="totalBank">₹0</div>
+      </div>
+      <div class="card-body">
+        <div class="period-badge">📅 <input id="bankDate" placeholder="31st July"></div>
+        <table class="entry-table"><tbody id="bankBody"></tbody></table>
+        <div class="quick-add">
+          <input type="text" id="bankQuick" placeholder="HDFC-16575 or Union-6000(locked)">
+          <button class="btn btn-primary btn-sm" onclick="quickAdd('bank','bankQuick')">Add</button>
+        </div>
+      </div>
+    </div>
+    <!-- Receivables -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon ic-receive">📬</div>
+          <div>
+            <div class="card-title">Will Receive</div>
+            <div class="card-sub" id="receiveSub">—</div>
+          </div>
+        </div>
+        <div class="card-total c-amber" id="totalReceivable">₹0</div>
+      </div>
+      <div class="card-body">
+        <div class="period-badge">📅 <input id="receivableDate" placeholder="31st July"></div>
+        <table class="entry-table"><tbody id="receivableBody"></tbody></table>
+        <div class="quick-add">
+          <input type="text" id="receivableQuick" placeholder="Vipul-370">
+          <button class="btn btn-primary btn-sm" onclick="quickAdd('receivable','receivableQuick')">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">🚕 Cab Reimbursement</div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon ic-cab">🕐</div>
+          <div>
+            <div class="card-title">Not Yet Applied</div>
+            <div class="card-sub">Pending submission</div>
+          </div>
+        </div>
+        <div class="card-total c-purple" id="totalCabNotApplied">₹0</div>
+      </div>
+      <div class="card-body">
+        <table class="entry-table"><tbody id="cabNotAppliedBody"></tbody></table>
+        <div class="quick-add">
+          <input type="text" id="cabNotAppliedQuick" placeholder="28_Evening-373(Booked by Me)">
+          <button class="btn btn-primary btn-sm" onclick="quickAdd('cabNotApplied','cabNotAppliedQuick')">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-icon ic-cab2">✅</div>
+          <div>
+            <div class="card-title">Applied — Didn't Get</div>
+            <div class="card-sub">Submitted, awaiting credit</div>
+          </div>
+        </div>
+        <div class="card-total c-cyan" id="totalCabApplied">₹0</div>
+      </div>
+      <div class="card-body">
+        <table class="entry-table"><tbody id="cabAppliedBody"></tbody></table>
+        <div class="quick-add">
+          <input type="text" id="cabAppliedQuick" placeholder="30_Morning-406(Booked by Diya)">
+          <button class="btn btn-primary btn-sm" onclick="quickAdd('cabApplied','cabAppliedQuick')">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">📋 Notepad-style Summary</div>
+  <div class="grid2">
+    <div class="output-card">
+      <div class="output-header">
+        <div class="output-title">💼 Main Summary</div>
+        <div>
+          <button class="btn btn-ghost btn-sm" onclick="copyOut('mainOutput','mainCopied')">📋 Copy</button>
+          <span class="copy-badge" id="mainCopied">✓ Copied!</span>
+        </div>
+      </div>
+      <textarea class="output" id="mainOutput" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="output-card">
+      <div class="output-header">
+        <div class="output-title">🚕 Cab Reimbursement</div>
+        <div>
+          <button class="btn btn-ghost btn-sm" onclick="copyOut('cabOutput','cabCopied')">📋 Copy</button>
+          <span class="copy-badge" id="cabCopied">✓ Copied!</span>
+        </div>
+      </div>
+      <textarea class="output" id="cabOutput" readonly spellcheck="false"></textarea>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'moneyTrackerData';
+const INR = n => '₹' + Number(n).toLocaleString('en-IN');
+function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+
+function ordinal(n){
+  const s=["th","st","nd","rd"],v=n%100;
+  return n+(s[(v-20)%10]||s[v]||s[0]);
+}
+function todayLabel(){
+  const d=new Date();
+  const m=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return `${ordinal(d.getDate())} ${m[d.getMonth()]}`;
+}
+
+// ── DEFAULT STATE (period-based income/expense) ───────────────────────────
+function defaultState(){
+  return {
+    balanceDate:'31st July', bankDate:'31st July', receivableDate:'31st July',
+    currBal: 26688,
+    incomePeriods:[{
+      id:1, label:'Till 31st',
+      entries:[
+        {label:'salary',amount:40247,note:''},
+        {label:'cab reimbursement',amount:2321,note:''},
+        {label:'ITR',amount:6120,note:''}
+      ]
+    }],
+    expensePeriods:[{
+      id:2, label:'Till 31st',
+      entries:[
+        {label:'liquid',amount:20,note:''},{label:'ciggrete',amount:30,note:''},
+        {label:'goudrow',amount:530,note:''},{label:'recharge',amount:579,note:''},
+        {label:'sampoo',amount:6,note:''},{label:'cab',amount:406,note:''},
+        {label:'goudrow',amount:105,note:''},{label:'cab',amount:372,note:''},
+        {label:'Education Loan',amount:20000,note:''}
+      ]
+    }],
+    bank:[
+      {label:'Canara',amount:4010,note:''},
+      {label:'Union',amount:6000,note:'locked for trip'},
+      {label:'HDFC',amount:16575,note:''}
+    ],
+    receivable:[
+      {label:'PhonePe split wise',amount:693,note:''},
+      {label:'Vipul',amount:370,note:''},
+      {label:'Cab reimbursement',amount:778,note:''}
+    ],
+    cabNotApplied:[
+      {label:'28_Evening',amount:373,note:'(Booked by Me)'},
+      {label:'29_Evening',amount:406,note:'(Booked by DIya)'}
+    ],
+    cabApplied:[]
+  };
+}
+
+// ── MIGRATE OLD FLAT FORMAT ───────────────────────────────────────────────
+function migrate(s){
+  if(s.income !== undefined && s.incomePeriods === undefined){
+    s.incomePeriods=[{id:Date.now(),label:s.incomePeriod||'Till 31st',entries:s.income}];
+    delete s.income; delete s.incomePeriod;
+  }
+  if(s.expense !== undefined && s.expensePeriods === undefined){
+    s.expensePeriods=[{id:Date.now()+1,label:s.expensePeriod||'Till 31st',entries:s.expense}];
+    delete s.expense; delete s.expensePeriod;
+  }
+  return s;
+}
+
+function loadLocal(){
+  try{ const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):null; }catch(e){ return null; }
+}
+function saveLocal(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(committed)); }
+
+let state = migrate(loadLocal() || defaultState());
+let committed = deepClone(state);
+let undoStack = [];
+let fileHandle = null;
+
+// ── DIRTY / CLEAN INDICATOR ───────────────────────────────────────────────
+function markDirty(){
+  const el=document.getElementById('fileStatus');
+  el.textContent='● Unsaved changes'; el.style.color='var(--amber2)';
+  document.getElementById('btnCommit').classList.add('dirty');
+}
+function markClean(msg){
+  const el=document.getElementById('fileStatus');
+  el.textContent=msg||'Saved \u2713'; el.style.color='';
+  document.getElementById('btnCommit').classList.remove('dirty');
+}
+
+// ── COMMIT SAVE ───────────────────────────────────────────────────────────
+function commitSave(){
+  // apply cab auto-removal on save
+  const norm=l=>l.trim().toLowerCase();
+  const applied=new Set(state.cabApplied.map(e=>norm(e.label)));
+  if(applied.size>0){
+    const before=state.cabNotApplied.length;
+    state.cabNotApplied=state.cabNotApplied.filter(e=>!applied.has(norm(e.label)));
+    if(state.cabNotApplied.length!==before) renderTable('cabNotApplied');
+  }
+  undoStack.push(deepClone(committed));
+  if(undoStack.length>20) undoStack.shift();
+  committed=deepClone(state);
+  saveLocal(); recalc();
+  markClean('Saved \u2713');
+  document.getElementById('btnUndo').disabled=false;
+}
+
+// ── UNDO ──────────────────────────────────────────────────────────────────
+function undoSave(){
+  if(undoStack.length===0) return;
+  state=undoStack.pop();
+  committed=deepClone(state);
+  saveLocal(); fullRender();
+  markClean('Undone \u2713');
+  document.getElementById('btnUndo').disabled=undoStack.length===0;
+}
+
+// ── PERIOD COLOUR ACCENTS ─────────────────────────────────────────────────
+const PERIOD_COLORS_INCOME  = ['#34d399','#10b981','#6ee7b7','#a7f3d0'];
+const PERIOD_COLORS_EXPENSE = ['#f87171','#ef4444','#fca5a5','#fecaca'];
+
+// ── ENTRY PARSER ──────────────────────────────────────────────────────────
+function parseEntry(str){
+  str=str.trim(); if(!str) return null;
+  const di=str.indexOf('-'); if(di===-1) return {label:str,amount:0,note:''};
+  const left=str.slice(0,di).trim(), right=str.slice(di+1).trim();
+  const rm=right.match(/^(\d+(\.\d+)?)\s*(.*)$/);
+  if(rm) return {label:left,amount:parseFloat(rm[1]),note:rm[3].trim()};
+  const lm=left.match(/^(\d+(\.\d+)?)$/);
+  if(lm){ const nm=right.match(/^(.*?)\s*(\(.*\))?$/); return {label:nm[1].trim(),amount:parseFloat(lm[1]),note:(nm[2]||'').trim()}; }
+  return {label:str,amount:0,note:''};
+}
+
+// ── PERIOD CRUD ───────────────────────────────────────────────────────────
+function addPeriod(section){
+  const arr=section==='income'?state.incomePeriods:state.expensePeriods;
+  arr.push({id:Date.now(),label:todayLabel()+' (new)',entries:[]});
+  renderPeriods(section); markDirty();
+}
+function deletePeriod(section,pid){
+  if(!confirm('Delete this period and all its entries?')) return;
+  const key=section==='income'?'incomePeriods':'expensePeriods';
+  state[key]=state[key].filter(p=>p.id!==pid);
+  renderPeriods(section); markDirty();
+}
+function updatePeriodLabel(section,pid,val){
+  const p=getPeriod(section,pid); if(p) p.label=val;
+  markDirty();
+}
+
+function getPeriod(section,pid){
+  const arr = section==='income'?state.incomePeriods:state.expensePeriods;
+  return arr.find(p=>p.id===pid);
+}
+
+// ── ENTRY CRUD (within a period) ──────────────────────────────────────────
+function quickAddToPeriod(section,pid,inputId){
+  const el=document.getElementById(inputId);
+  const e=parseEntry(el.value); if(!e) return;
+  const p=getPeriod(section,pid); if(!p) return;
+  p.entries.push(e); el.value='';
+  renderPeriods(section); markDirty();
+}
+function addBlankToPeriod(section,pid){
+  const p=getPeriod(section,pid); if(!p) return;
+  p.entries.push({label:'',amount:0,note:''});
+  renderPeriods(section);
+}
+function removeEntryFromPeriod(section,pid,idx){
+  const p=getPeriod(section,pid); if(!p) return;
+  p.entries.splice(idx,1);
+  renderPeriods(section); markDirty();
+}
+function updatePeriodEntry(section,pid,idx,field,val){
+  if(field==='amount') val=parseFloat(val)||0;
+  const p=getPeriod(section,pid); if(!p) return;
+  p.entries[idx][field]=val;
+  if(field==='amount') updatePeriodSubtotalDisplay(section,pid);
+  markDirty();
+}
+function updatePeriodSubtotalDisplay(section,pid){
+  const p=getPeriod(section,pid); if(!p) return;
+  const subtotal=p.entries.reduce((t,e)=>t+(Number(e.amount)||0),0);
+  const el=document.getElementById(`subtotal_${section}_${pid}`);
+  if(el) el.textContent=INR(subtotal);
+}
+
+// ── RENDER PERIODS ────────────────────────────────────────────────────────
+function renderPeriods(section){
+  const containerId = section+'PeriodsContainer';
+  const container = document.getElementById(containerId);
+  const arr = section==='income' ? state.incomePeriods : state.expensePeriods;
+  const colors = section==='income' ? PERIOD_COLORS_INCOME : PERIOD_COLORS_EXPENSE;
+
+  container.innerHTML = arr.map((p,pi) => {
+    const color = colors[pi % colors.length];
+    const subtotal = p.entries.reduce((t,e)=>t+(Number(e.amount)||0),0);
+    const quickId = `${section}_${p.id}_quick`;
+    const rows = p.entries.map((e,i) => `
+      <tr class="draggable-row" draggable="true"
+          ondragstart="dndStart(event,'period:${section}:${p.id}:${i}')"
+          ondragend="dndEnd(event)"
+          ondragover="dndRowOver(event,'period:${section}:${p.id}:${i}')"
+          ondragleave="dndRowLeave(event)"
+          ondrop="dndRowDrop(event,'period:${section}:${p.id}:${i}')">
+        <td class="drag-handle-col"><span class="drag-handle" title="Drag to move">⠇</span></td>
+        <td><input type="text" value="${ea(e.label)}" placeholder="label"
+          oninput="updatePeriodEntry('${section}',${p.id},${i},'label',this.value)"></td>
+        <td class="amt-col"><input type="number" value="${e.amount}" placeholder="0"
+          oninput="updatePeriodEntry('${section}',${p.id},${i},'amount',this.value)"></td>
+        <td class="del-col"><button class="del-btn" title="Remove"
+          onclick="removeEntryFromPeriod('${section}',${p.id},${i})">×</button></td>
+      </tr>`).join('');
+
+    return `
+    <div class="period-block">
+      <div class="period-header" style="border-left:3px solid ${color};">
+        <input class="period-name-input" value="${ea(p.label)}" placeholder="e.g. 1 Jul – 15 Jul"
+          oninput="updatePeriodLabel('${section}',${p.id},this.value)" title="Click to rename this period">
+        <span class="period-subtotal" id="subtotal_${section}_${p.id}" style="color:${color};">${INR(subtotal)}</span>
+        ${arr.length>1 ? `<button class="period-del" title="Delete period" onclick="deletePeriod('${section}',${p.id})">×</button>` : ''}
+      </div>
+      <div class="period-body">
+        <table class="entry-table">
+          <tbody ondragover="dndZoneOver(event)" ondragleave="dndZoneLeave(event)" ondrop="dndZoneDrop(event,'period:${section}:${p.id}')">${rows}</tbody>
+        </table>
+        <button class="btn btn-add" onclick="addBlankToPeriod('${section}',${p.id})">+ Add row</button>
+        <div class="period-quick-add">
+          <input type="text" id="${quickId}" placeholder="${section==='income'?'salary-40247':'530-goudrow'}">
+          <button class="btn btn-primary btn-sm" onclick="quickAddToPeriod('${section}',${p.id},'${quickId}')">Add</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // bind Enter key for each quick-add input
+  arr.forEach(p=>{
+    const el=document.getElementById(`${section}_${p.id}_quick`);
+    if(el) el.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); quickAddToPeriod(section,p.id,el.id); } });
+  });
+}
+
+// ── FLAT TABLE (bank / receivable / cab) ──────────────────────────────────
+const HAS_NOTE={bank:true,cabNotApplied:true,cabApplied:true};
+
+function renderTable(section){
+  const body=document.getElementById(section+'Body');
+  const rows=state[section];
+  body.innerHTML=rows.map((r,i)=>`
+    <tr class="draggable-row" draggable="true"
+        ondragstart="dndStart(event,'flat:${section}:${i}')"
+        ondragend="dndEnd(event)"
+        ondragover="dndRowOver(event,'flat:${section}:${i}')"
+        ondragleave="dndRowLeave(event)"
+        ondrop="dndRowDrop(event,'flat:${section}:${i}')">
+      <td class="drag-handle-col"><span class="drag-handle" title="Drag to move">⠇</span></td>
+      <td><input type="text" value="${ea(r.label)}" placeholder="label"
+        oninput="updateField('${section}',${i},'label',this.value)"></td>
+      <td class="amt-col"><input type="number" value="${r.amount}" placeholder="0"
+        oninput="updateField('${section}',${i},'amount',this.value)"></td>
+      ${HAS_NOTE[section]?`<td class="note-col"><input type="text" value="${ea(r.note||'')}" placeholder="note"
+        oninput="updateField('${section}',${i},'note',this.value)"></td>`:''}
+      <td class="del-col"><button class="del-btn" onclick="removeRow('${section}',${i})">×</button></td>
+    </tr>`).join('')+
+    `<tr><td colspan="${HAS_NOTE[section]?5:4}"><button class="btn btn-add" onclick="addBlankRow('${section}')">+ Add row</button></td></tr>`;
+  body.ondragover=dndZoneOver;
+  body.ondragleave=dndZoneLeave;
+  body.ondrop=e=>dndZoneDrop(e,`flat:${section}`);
+}
+
+function ea(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function quickAdd(section,inputId){
+  const el=document.getElementById(inputId);
+  const e=parseEntry(el.value); if(!e) return;
+  state[section].push(e); el.value='';
+  renderTable(section); markDirty();
+}
+function addBlankRow(section){ state[section].push({label:'',amount:0,note:''}); renderTable(section); }
+function removeRow(section,idx){ state[section].splice(idx,1); renderTable(section); markDirty(); }
+function updateField(section,idx,field,val){
+  if(field==='amount') val=parseFloat(val)||0;
+  state[section][idx][field]=val;
+  markDirty();
+}
+
+// ── DRAG & DROP ───────────────────────────────────────────────────────────
+let dndSrc=null;
+
+function dndStart(event,src){
+  dndSrc=src;
+  event.dataTransfer.effectAllowed='move';
+  event.dataTransfer.setData('text/plain',src);
+  setTimeout(()=>{ const tr=event.target.closest('tr'); if(tr) tr.classList.add('is-dragging'); },0);
+}
+function dndEnd(event){
+  document.querySelectorAll('.is-dragging').forEach(el=>el.classList.remove('is-dragging'));
+  document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  document.querySelectorAll('.drop-zone-active').forEach(el=>el.classList.remove('drop-zone-active'));
+  dndSrc=null;
+}
+function dndRowOver(event,dest){
+  if(!dndSrc||dndSrc===dest) return;
+  event.preventDefault(); event.stopPropagation();
+  event.dataTransfer.dropEffect='move';
+  document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  event.currentTarget.classList.add('drag-over');
+}
+function dndRowLeave(event){ event.currentTarget.classList.remove('drag-over'); }
+function dndRowDrop(event,dest){
+  event.preventDefault(); event.stopPropagation();
+  if(!dndSrc||dndSrc===dest) return;
+  const src=dndSrc; dndEnd(event);
+  dndPerformMove(src,dest,'before');
+}
+function dndZoneOver(event){
+  if(!dndSrc) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect='move';
+  event.currentTarget.classList.add('drop-zone-active');
+}
+function dndZoneLeave(event){ event.currentTarget.classList.remove('drop-zone-active'); }
+function dndZoneDrop(event,dest){
+  event.preventDefault();
+  if(!dndSrc) return;
+  const src=dndSrc; dndEnd(event);
+  if(src.startsWith(dest)) return; // dropping container on itself
+  dndPerformMove(src,dest,'append');
+}
+
+function dndPerformMove(src,dest,mode){
+  const sp=src.split(':'), dp=dest.split(':');
+  // Adjust dest index if moving within same container (element shifts after removal)
+  let adj=0;
+  if(mode==='before'){
+    if(sp[0]==='period'&&dp[0]==='period'&&sp[1]===dp[1]&&sp[2]===dp[2]&&Number(dp[3])>Number(sp[3])) adj=-1;
+    if(sp[0]==='flat'&&dp[0]==='flat'&&sp[1]===dp[1]&&Number(dp[2])>Number(sp[2])) adj=-1;
+  }
+  // Remove from source
+  let entry;
+  if(sp[0]==='period'){
+    const p=getPeriod(sp[1],Number(sp[2])); if(!p) return;
+    [entry]=p.entries.splice(Number(sp[3]),1);
+  } else {
+    [entry]=state[sp[1]].splice(Number(sp[2]),1);
+  }
+  entry={label:entry.label,amount:entry.amount,note:entry.note||''};
+  // Insert at destination
+  if(dp[0]==='period'){
+    const p=getPeriod(dp[1],Number(dp[2])); if(!p) return;
+    if(mode==='before') p.entries.splice(Number(dp[3])+adj,0,entry);
+    else p.entries.push(entry);
+    renderPeriods(dp[1]);
+    if(sp[0]==='period'&&sp[1]!==dp[1]) renderPeriods(sp[1]);
+    if(sp[0]==='flat') renderTable(sp[1]);
+  } else {
+    if(mode==='before') state[dp[1]].splice(Number(dp[2])+adj,0,entry);
+    else state[dp[1]].push(entry);
+    renderTable(dp[1]);
+    if(sp[0]==='period') renderPeriods(sp[1]);
+    if(sp[0]==='flat'&&sp[1]!==dp[1]) renderTable(sp[1]);
+  }
+  markDirty();
+}
+
+// ── RECALC ────────────────────────────────────────────────────────────────
+function sumPeriods(arr){ return arr.reduce((t,p)=>t+p.entries.reduce((s,e)=>s+(Number(e.amount)||0),0),0); }
+function sum(arr){ return arr.reduce((t,r)=>t+(Number(r.amount)||0),0); }
+
+function recalc(){
+  const tI=sumPeriods(state.incomePeriods), tE=sumPeriods(state.expensePeriods),
+        tB=sum(state.bank), tR=sum(state.receivable),
+        tCN=sum(state.cabNotApplied), tCA=sum(state.cabApplied);
+
+  const totalEntries = s => s.reduce((t,p)=>t+p.entries.length,0);
+
+  // stat strip
+  document.getElementById('statIncome').textContent    = INR(tI);
+  document.getElementById('statExpense').textContent   = INR(tE);
+  document.getElementById('statBalance').textContent   = INR(tI-tE);
+  document.getElementById('statBank').textContent      = INR(tB);
+  document.getElementById('statReceivable').textContent= INR(tR);
+  document.getElementById('statIncomeSub').textContent = `${totalEntries(state.incomePeriods)} entries · ${state.incomePeriods.length} period${state.incomePeriods.length!==1?'s':''}`;
+  document.getElementById('statExpenseSub').textContent= `${totalEntries(state.expensePeriods)} entries · ${state.expensePeriods.length} period${state.expensePeriods.length!==1?'s':''}`;
+  document.getElementById('statBalSub').textContent    = `Income \u2212 Expense`;
+
+  // card totals
+  document.getElementById('totalIncome').textContent       = INR(tI);
+  document.getElementById('totalExpense').textContent      = INR(tE);
+  document.getElementById('totalBank').textContent         = INR(tB);
+  document.getElementById('totalReceivable').textContent   = INR(tR);
+  document.getElementById('totalCabNotApplied').textContent= INR(tCN);
+  document.getElementById('totalCabApplied').textContent   = INR(tCA);
+
+  // card subs
+  document.getElementById('incomeSub').textContent = `${totalEntries(state.incomePeriods)} entries · ${state.incomePeriods.length} period${state.incomePeriods.length!==1?'s':''}`;
+  document.getElementById('expenseSub').textContent= `${totalEntries(state.expensePeriods)} entries · ${state.expensePeriods.length} period${state.expensePeriods.length!==1?'s':''}`;
+  document.getElementById('bankSub').textContent   = state.bankDate||'—';
+  document.getElementById('receiveSub').textContent= state.receivableDate||'—';
+
+  // balance hint
+  const diff=(Number(state.currBal)||0)-(tI-tE);
+  document.getElementById('balHint').textContent =
+    `Computed: ${INR(tI-tE)}  ·  Entered: ${INR(state.currBal)}  ·  Diff: ${diff>=0?'+':''}${INR(diff)}`;
+
+  renderOutput({tI,tE,tB,tR,tCN,tCA});
+}
+
+// ── OUTPUT ────────────────────────────────────────────────────────────────
+function renderOutput({tI,tE,tB,tR,tCN,tCA}){
+  const incomeBlocks = state.incomePeriods.map(p=>`\t${p.label}\n\t[\n${p.entries.map(e=>`\t\t${e.label}- ${e.amount}`).join('\n')}\n\t]`).join('\n\n');
+  const expenseBlocks= state.expensePeriods.map(p=>`\t${p.label}\n\t[\n${p.entries.map(e=>`\t\t${e.amount}- ${e.label}`).join('\n')}\n\t]`).join('\n\n');
+  const bank         = state.bank.map(r=>`\t${r.label}- ${r.amount}${r.note?'('+r.note.replace(/[()]/g,'')+')':''}`).join('\n');
+  const receivable   = state.receivable.map(r=>`\t${r.label}- ${r.amount}`).join('\n');
+
+  document.getElementById('mainOutput').value=
+`Income
+{
+${incomeBlocks}
+}
+Total Income- ${tI}
+
+
+
+expense
+{
+${expenseBlocks}
+}
+Total expense- ${tE}
+
+
+
+Balance(updated on ${state.balanceDate})
+{
+\tCurr. Bal- ${state.currBal}
+}
+
+
+
+Bank(updated on ${state.bankDate})
+{
+${bank}
+}
+
+
+
+Money i will receive(updated on ${state.receivableDate})
+{ 
+${receivable}
+}
+Total- ${tR}
+`;
+
+  const cabNA=state.cabNotApplied.map(r=>`\t${r.label}- ${r.amount}${r.note?' '+r.note:''}`).join('\n');
+  const cabA =state.cabApplied.map(r=>`\t${r.label}- ${r.amount}${r.note?' '+r.note:''}`).join('\n');
+  document.getElementById('cabOutput').value=
+`Cab reimbursement(Not yet Applied)
+{\t
+${cabNA}
+}
+Total- ${tCN}
+
+Cab reimbursement(Applied, didn't get)
+{
+${cabA}
+}
+Total- ${tCA}
+`;
+}
+
+function copyOut(id,badgeId){
+  const ta=document.getElementById(id);
+  const done=()=>{ const b=document.getElementById(badgeId); b.classList.add('show'); setTimeout(()=>b.classList.remove('show'),1400); };
+  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(ta.value).then(done).catch(()=>{ ta.select(); document.execCommand('copy'); done(); });
+  else { ta.select(); document.execCommand('copy'); done(); }
+}
+
+// ── FULL RENDER ───────────────────────────────────────────────────────────
+function fullRender(){
+  document.getElementById('balanceDate').value    = state.balanceDate;
+  document.getElementById('currBal').value        = state.currBal;
+  document.getElementById('bankDate').value       = state.bankDate;
+  document.getElementById('receivableDate').value = state.receivableDate;
+  renderPeriods('income');
+  renderPeriods('expense');
+  ['bank','receivable','cabNotApplied','cabApplied'].forEach(renderTable);
+  recalc();
+}
+
+// ── BINDINGS ──────────────────────────────────────────────────────────────
+document.getElementById('balanceDate').addEventListener('input',e=>{ state.balanceDate=e.target.value; markDirty(); });
+document.getElementById('currBal').addEventListener('input',e=>{ state.currBal=parseFloat(e.target.value)||0; markDirty(); });
+document.getElementById('bankDate').addEventListener('input',e=>{ state.bankDate=e.target.value; markDirty(); });
+document.getElementById('receivableDate').addEventListener('input',e=>{ state.receivableDate=e.target.value; markDirty(); });
+
+['bankQuick','receivableQuick','cabNotAppliedQuick','cabAppliedQuick'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown',e=>{
+    if(e.key==='Enter'){ e.preventDefault(); quickAdd(id.replace('Quick',''),id); }
+  });
+});
+
+document.getElementById('btnCommit').addEventListener('click', commitSave);
+document.getElementById('btnUndo').addEventListener('click', undoSave);
+
+document.getElementById('btnNewPeriod').addEventListener('click',()=>{
+  if(!confirm('Start a new tracking period?\nThis will clear ALL income and expense periods.\nBank / Balance / Receivables / Cab data are kept.')) return;
+  const lbl=`Till ${todayLabel()}`;
+  state.incomePeriods =[{id:Date.now(),   label:lbl, entries:[]}];
+  state.expensePeriods=[{id:Date.now()+1, label:lbl, entries:[]}];
+  fullRender(); markDirty();
+});
+
+// ── FILE OPS ──────────────────────────────────────────────────────────────
+const supportsFS='showOpenFilePicker' in window;
+
+document.getElementById('btnOpen').addEventListener('click',async()=>{
+  if(supportsFS){
+    try{
+      const [handle]=await window.showOpenFilePicker({types:[{description:'Money Tracker JSON',accept:{'application/json':['.json']}}]});
+      const file=await handle.getFile(); state=migrate(JSON.parse(await file.text()));
+      committed=deepClone(state); undoStack=[];
+      fileHandle=handle; markClean(`Opened: ${file.name}`); fullRender(); saveLocal();
+    }catch(e){}
+  } else { document.getElementById('fileInput').click(); }
+});
+
+document.getElementById('fileInput').addEventListener('change',ev=>{
+  const file=ev.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{ state=migrate(JSON.parse(r.result)); committed=deepClone(state); undoStack=[]; markClean(`Opened: ${file.name}`); fullRender(); saveLocal(); };
+  r.readAsText(file);
+});
+
+async function writeToHandle(h){ const w=await h.createWritable(); await w.write(JSON.stringify(committed,null,2)); await w.close(); }
+
+document.getElementById('btnSaveFile').addEventListener('click',async()=>{
+  commitSave();
+  if(supportsFS){ if(!fileHandle){ document.getElementById('btnSaveAs').click(); return; }
+    await writeToHandle(fileHandle); markClean(`Saved: ${fileHandle.name}`);
+  } else downloadJSON();
+});
+document.getElementById('btnSaveAs').addEventListener('click',async()=>{
+  commitSave();
+  if(supportsFS){
+    try{
+      const h=await window.showSaveFilePicker({suggestedName:'money-tracker.json',types:[{description:'Money Tracker JSON',accept:{'application/json':['.json']}}]});
+      fileHandle=h; await writeToHandle(h); markClean(`Saved: ${h.name}`);
+    }catch(e){}
+  } else downloadJSON();
+});
+function downloadJSON(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(committed,null,2)],{type:'application/json'}));
+  a.download='money-tracker.json'; a.click();
+  markClean('Downloaded money-tracker.json');
+}
+
+fullRender();
+</script>
+</body>
+</html>

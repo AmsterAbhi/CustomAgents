@@ -1,0 +1,24 @@
+.app-toolbar {
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 500;
+  }
+
+  &__spacer {
+    flex: 1 1 auto;
+  }
+
+  &__nav {
+    display: flex;
+    gap: 0.25rem;
+    margin-right: 0.5rem;
+  }
+
+  &__nav-link--active {
+    text-decoration: underline;
+  }
+}
+
+.app-content {
+  padding: 1.5rem;
+}

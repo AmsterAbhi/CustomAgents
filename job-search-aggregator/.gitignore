@@ -1,0 +1,55 @@
+## .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.dbmdl
+*.jfm
+*.pdb
+*.dll
+*.cache
+
+## Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+## Rider / VS / VS Code
+.idea/
+*.suo
+*.sln.docstates
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## Logs
+logs/
+*.log
+
+## Secrets / local config overrides
+appsettings.*.local.json
+*.env
+.env
+
+## Angular / Node
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.vscode/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tsbuildinfo
+
+## OS
+.DS_Store
+Thumbs.db

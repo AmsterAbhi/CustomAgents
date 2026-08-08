@@ -1,0 +1,28 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Api/">
+    <Project Path="src/Api/JobSearchAggregator.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Application/">
+    <Project Path="src/Application/JobSearchAggregator.Application.csproj" />
+  </Folder>
+  <Folder Name="/src/Common/">
+    <Project Path="src/Common/JobSearchAggregator.Common.csproj" />
+  </Folder>
+  <Folder Name="/src/Domain/">
+    <Project Path="src/Domain/JobSearchAggregator.Domain.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/JobSearchAggregator.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/JobSearchAggregator.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Application.Tests/">
+    <Project Path="tests/Application.Tests/JobSearchAggregator.Application.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Domain.Tests/">
+    <Project Path="tests/Domain.Tests/JobSearchAggregator.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,24 @@
+<mat-toolbar color="primary" class="app-toolbar">
+  <span class="app-toolbar__title">Job Search Aggregator</span>
+
+  <span class="app-toolbar__spacer"></span>
+
+  <nav class="app-toolbar__nav">
+    <a mat-button routerLink="/dashboard" routerLinkActive="app-toolbar__nav-link--active">Dashboard</a>
+    <a mat-button routerLink="/settings" routerLinkActive="app-toolbar__nav-link--active">Settings</a>
+  </nav>
+
+  <button
+    mat-icon-button
+    type="button"
+    [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+    [attr.aria-pressed]="theme.isDark()"
+    (click)="theme.toggle()"
+  >
+    <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </button>
+</mat-toolbar>
+
+<main class="app-content">
+  <router-outlet></router-outlet>
+</main>

@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATS Resume Builder</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+:root{
+  --bg:#06080e;--surface:#0c1018;--card:#111622;--card2:#161d2d;
+  --border:#1a2236;--border-glow:#2a3a5a;--border-hover:#3a4a6a;
+  --text:#e8edf5;--text-secondary:#b0bdd0;--muted:#5a6a85;--subtle:#2a3550;
+  --accent:#7c3aed;--accent2:#a78bfa;--accent-glow:rgba(124,58,237,.25);
+  --green:#10b981;--green2:#34d399;--green-glow:rgba(16,185,129,.15);
+  --red:#ef4444;--red2:#fca5a5;--red-glow:rgba(239,68,68,.15);
+  --amber:#f59e0b;--amber2:#fcd34d;--blue:#3b82f6;--blue2:#93c5fd;
+  --purple:#a855f7;--cyan:#06b6d4;
+  --r:10px;--r-lg:14px;--r-xl:18px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2);
+  --shadow-md:0 4px 12px rgba(0,0,0,.4),0 2px 4px rgba(0,0,0,.25);
+  --shadow-lg:0 10px 30px rgba(0,0,0,.5),0 4px 8px rgba(0,0,0,.3);
+  --transition:all .2s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;line-height:1.5;overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse 90% 50% at 50% -15%,rgba(124,58,237,.06) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 85%,rgba(16,185,129,.03) 0%,transparent 50%),
+    radial-gradient(ellipse 40% 30% at 10% 50%,rgba(59,130,246,.03) 0%,transparent 50%);
+}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:12px 24px;background:rgba(12,16,24,.92);backdrop-filter:blur(16px) saturate(1.4);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.logo-icon{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,#7c3aed 0%,#a855f7 50%,#c084fc 100%);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 2px 12px rgba(124,58,237,.3);transition:var(--transition);
+}
+.logo:hover .logo-icon{transform:scale(1.05);box-shadow:0 4px 20px rgba(124,58,237,.45);}
+.logo-text{font-size:17px;font-weight:800;letter-spacing:-.4px;
+  background:linear-gradient(135deg,#e8edf5,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-size:10.5px;color:var(--muted);letter-spacing:.3px;}
+.topbar-center{display:flex;align-items:center;gap:4px;}
+.topbar-right{display:flex;gap:8px;align-items:center;}
+
+/* ─── BUTTONS ─── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:9px;border:none;cursor:pointer;
+  font-size:12.5px;font-weight:600;font-family:inherit;
+  transition:var(--transition);position:relative;overflow:hidden;
+  white-space:nowrap;
+}
+.btn::after{
+  content:'';position:absolute;inset:0;opacity:0;
+  background:radial-gradient(circle at center,rgba(255,255,255,.15),transparent 70%);
+  transition:opacity .2s;
+}
+.btn:active::after{opacity:1;}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),#9333ea);color:#fff;
+  box-shadow:0 2px 8px rgba(124,58,237,.3);
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg,#8b5cf6,#a855f7);
+  box-shadow:0 4px 16px rgba(124,58,237,.45);transform:translateY(-1px);
+}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-ghost{
+  background:rgba(255,255,255,.04);color:var(--text-secondary);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover{
+  background:rgba(255,255,255,.08);border-color:var(--border-glow);
+  color:var(--text);transform:translateY(-1px);
+}
+.btn-success{
+  background:rgba(16,185,129,.1);color:var(--green2);
+  border:1px solid rgba(16,185,129,.2);
+}
+.btn-success:hover{background:rgba(16,185,129,.2);box-shadow:0 2px 12px var(--green-glow);}
+.btn-icon{
+  width:36px;height:36px;padding:0;display:flex;align-items:center;
+  justify-content:center;border-radius:9px;font-size:16px;
+}
+.btn-icon-sm{width:30px;height:30px;font-size:14px;border-radius:7px;}
+
+/* ─── NAV TABS ─── */
+.nav-tabs{
+  display:flex;gap:2px;background:rgba(12,16,24,.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:0 24px;
+  position:sticky;top:62px;z-index:99;
+}
+.nav-tab{
+  padding:12px 22px;font-size:13px;font-weight:600;color:var(--muted);
+  cursor:pointer;border:none;background:none;font-family:inherit;
+  border-bottom:2.5px solid transparent;transition:var(--transition);
+  display:flex;align-items:center;gap:8px;position:relative;
+}
+.nav-tab:hover{color:var(--text-secondary);background:rgba(255,255,255,.02);}
+.nav-tab.active{color:var(--accent2);border-bottom-color:var(--accent);}
+.nav-tab .tab-badge{
+  font-size:9px;padding:2px 7px;border-radius:20px;font-weight:700;
+  background:rgba(124,58,237,.15);color:var(--accent2);
+}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* ─── LAYOUT ─── */
+.main{display:grid;grid-template-columns:1fr 1fr;gap:0;height:calc(100vh - 104px);}
+@media(max-width:960px){.main{grid-template-columns:1fr;height:auto;}}
+.panel{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+.panel:last-child{border-right:none;}
+.panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.015);flex-shrink:0;gap:12px;
+}
+.panel-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;letter-spacing:-.2px;}
+.panel-title .icon{font-size:15px;opacity:.8;}
+.panel-body{flex:1;overflow:auto;padding:0;position:relative;}
+
+/* ─── TEXTAREA ─── */
+textarea{
+  width:100%;height:100%;min-height:300px;
+  background:transparent;color:var(--text);border:none;
+  padding:18px 20px;font-family:'Cascadia Code','Fira Code','JetBrains Mono',Consolas,monospace;
+  font-size:12.5px;line-height:1.75;resize:none;outline:none;
+}
+textarea::placeholder{color:var(--subtle);}
+textarea.jd-input{
+  font-family:'Inter',system-ui,sans-serif;font-size:13.5px;line-height:1.65;
+  padding:20px;
+}
+textarea:focus{background:rgba(124,58,237,.01);}
+
+/* ─── RESUME UPLOAD BAR ─── */
+.resume-bar{
+  display:flex;align-items:center;gap:10px;padding:10px 20px;
+  border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);flex-shrink:0;
+}
+.resume-bar-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.resume-bar-status{
+  flex:1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.resume-bar-status.loaded{color:var(--green2);}
+.resume-bar-status .file-name{font-weight:600;color:var(--text-secondary);}
+
+/* ─── PIPELINE ─── */
+.pipeline-container{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.015);flex-shrink:0;
+}
+.pipeline{
+  display:flex;align-items:center;gap:0;position:relative;
+}
+.pipe-step{
+  display:flex;align-items:center;gap:7px;
+  padding:6px 14px;border-radius:24px;font-size:11.5px;font-weight:600;
+  background:rgba(255,255,255,.03);border:1.5px solid var(--border);
+  color:var(--muted);white-space:nowrap;transition:var(--transition);
+  position:relative;z-index:1;
+}
+.pipe-connector{
+  flex:1;height:2px;background:var(--border);min-width:12px;
+  position:relative;z-index:0;transition:background .3s;
+}
+.pipe-connector.done{background:var(--green);}
+.pipe-connector.active{background:var(--accent);animation:pulse-line 1.5s infinite;}
+@keyframes pulse-line{0%,100%{opacity:1;}50%{opacity:.4;}}
+.pipe-step .step-num{
+  width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.05);border:1.5px solid var(--border);
+  transition:var(--transition);
+}
+.pipe-step.active{
+  background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.35);color:var(--accent2);
+  box-shadow:0 0 16px var(--accent-glow);
+}
+.pipe-step.active .step-num{background:var(--accent);border-color:var(--accent);color:#fff;}
+.pipe-step.done{
+  background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25);color:var(--green2);
+}
+.pipe-step.done .step-num{background:var(--green);border-color:var(--green);color:#fff;}
+.pipe-step.error{
+  background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);color:var(--red2);
+}
+.pipe-step.error .step-num{background:var(--red);border-color:var(--red);color:#fff;}
+
+/* ─── STATUS BAR ─── */
+.status-bar{
+  padding:10px 20px;border-top:1px solid var(--border);
+  font-size:11.5px;color:var(--muted);background:rgba(255,255,255,.01);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--subtle);flex-shrink:0;transition:var(--transition);
+}
+.status-dot.active{background:var(--accent2);box-shadow:0 0 8px var(--accent-glow);animation:pulse 1.5s infinite;}
+.status-dot.done{background:var(--green);box-shadow:0 0 8px var(--green-glow);}
+.status-dot.error{background:var(--red);box-shadow:0 0 8px var(--red-glow);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+/* ─── EMPTY STATE ─── */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;padding:40px 32px;text-align:center;gap:16px;
+}
+.empty-state-icon{
+  width:72px;height:72px;border-radius:20px;
+  background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(168,85,247,.05));
+  border:1px solid rgba(124,58,237,.12);
+  display:flex;align-items:center;justify-content:center;font-size:32px;
+}
+.empty-state-title{font-size:15px;font-weight:700;color:var(--text);}
+.empty-state-desc{font-size:12.5px;color:var(--muted);max-width:320px;line-height:1.6;}
+.empty-state-hint{
+  font-size:11px;color:var(--subtle);
+  padding:6px 14px;border-radius:8px;
+  background:rgba(255,255,255,.02);border:1px solid var(--border);
+}
+.empty-state-hint kbd{
+  display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;
+  background:rgba(255,255,255,.06);border:1px solid var(--border);
+  font-family:inherit;font-weight:600;
+}
+
+/* ─── SETTINGS MODAL ─── */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(6,8,14,.75);backdrop-filter:blur(8px);
+  z-index:500;opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.modal-backdrop.show{opacity:1;pointer-events:auto;}
+.modal{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);
+  background:var(--card);border:1px solid var(--border-glow);
+  border-radius:var(--r-xl);width:min(480px,92vw);max-height:85vh;
+  overflow-y:auto;z-index:501;
+  opacity:0;pointer-events:none;transition:all .25s cubic-bezier(.4,0,.2,1);
+  box-shadow:var(--shadow-lg);
+}
+.modal-backdrop.show ~ .modal{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px 16px;border-bottom:1px solid var(--border);
+}
+.modal-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px;}
+.modal-body{padding:20px 24px 24px;}
+.modal-field{margin-bottom:18px;}
+.modal-field:last-child{margin-bottom:0;}
+.modal-label{
+  display:block;font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;
+}
+.modal-input{
+  width:100%;background:rgba(255,255,255,.03);border:1.5px solid var(--border);
+  color:var(--text);padding:10px 14px;border-radius:9px;
+  font-size:13px;font-family:monospace;outline:none;transition:var(--transition);
+}
+.modal-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.modal-select{
+  width:100%;background:var(--card2);border:1.5px solid var(--border);color:var(--text);
+  padding:10px 14px;border-radius:9px;font-size:13px;font-family:inherit;
+  outline:none;cursor:pointer;transition:var(--transition);
+  appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%235a6a85' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+}
+.modal-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.field-hint{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.4;}
+.provider-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:600;
+  border:1px solid var(--border);
+}
+.provider-badge.openai{background:rgba(16,163,127,.08);color:#10a37f;border-color:rgba(16,163,127,.2);}
+.provider-badge.anthropic{background:rgba(204,132,63,.08);color:#cc843f;border-color:rgba(204,132,63,.2);}
+.key-status{
+  display:flex;align-items:center;gap:5px;
+  font-size:10.5px;font-weight:600;margin-top:5px;
+}
+.key-status.set{color:var(--green2);}
+.key-status.unset{color:var(--muted);}
+
+/* ─── TOAST ─── */
+.toast-container{
+  position:fixed;top:80px;right:20px;
+  display:flex;flex-direction:column;gap:8px;z-index:600;
+  pointer-events:none;
+}
+.toast{
+  background:var(--card2);border:1px solid var(--border-glow);
+  color:var(--text);padding:12px 18px;border-radius:11px;
+  font-size:12.5px;font-weight:500;pointer-events:auto;
+  display:flex;align-items:center;gap:8px;
+  box-shadow:var(--shadow-md);
+  opacity:0;transform:translateX(20px);transition:all .3s cubic-bezier(.4,0,.2,1);
+  max-width:360px;
+}
+.toast.show{opacity:1;transform:translateX(0);}
+.toast.success{border-color:rgba(16,185,129,.3);}
+.toast.success .toast-icon{color:var(--green2);}
+.toast.error{border-color:rgba(239,68,68,.3);}
+.toast.error .toast-icon{color:var(--red2);}
+.toast.info{border-color:rgba(124,58,237,.3);}
+.toast.info .toast-icon{color:var(--accent2);}
+.toast-icon{font-size:15px;flex-shrink:0;}
+
+/* ─── LOADING ─── */
+.loading-overlay{
+  position:absolute;inset:0;background:rgba(6,8,14,.85);backdrop-filter:blur(4px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  z-index:50;opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.loading-overlay.show{opacity:1;pointer-events:auto;}
+.spinner{
+  width:36px;height:36px;border:3px solid rgba(124,58,237,.15);
+  border-top-color:var(--accent2);border-radius:50%;animation:spin .7s linear infinite;
+}
+.loading-text{font-size:12px;color:var(--muted);font-weight:500;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ─── PDF TAB ─── */
+.pdf-layout{display:grid;grid-template-columns:1fr 1fr;gap:0;height:calc(100vh - 104px);}
+@media(max-width:960px){.pdf-layout{grid-template-columns:1fr;height:auto;}}
+.pdf-input-panel{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+.pdf-preview-panel{display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.pdf-preview-area{
+  flex:1;overflow:auto;background:linear-gradient(180deg,#0f1520,#0a0e16);
+  padding:24px;display:flex;justify-content:center;
+}
+.pdf-preview-area iframe{width:100%;height:100%;border:none;border-radius:10px;background:#fff;box-shadow:var(--shadow-lg);}
+.pdf-action-bar{
+  padding:12px 20px;border-top:1px solid var(--border);
+  display:flex;gap:8px;flex-shrink:0;align-items:center;
+}
+
+/* ─── ATS SCORE DRAWER ─── */
+.ats-drawer-backdrop{
+  position:fixed;inset:0;background:rgba(6,8,14,.6);backdrop-filter:blur(4px);
+  z-index:400;opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.ats-drawer-backdrop.show{opacity:1;pointer-events:auto;}
+.ats-drawer{
+  position:fixed;right:0;top:0;bottom:0;width:min(440px,90vw);
+  background:var(--card);border-left:1px solid var(--border-glow);
+  z-index:401;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:-8px 0 30px rgba(0,0,0,.4);
+}
+.ats-drawer.show{transform:translateX(0);}
+.ats-drawer-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.ats-drawer-body{flex:1;overflow-y:auto;padding:22px;}
+
+/* ATS Score Ring */
+.ats-hero{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:24px;}
+.ats-score-ring{
+  width:100px;height:100px;border-radius:50%;position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.ats-score-ring svg{position:absolute;inset:0;transform:rotate(-90deg);}
+.ats-score-ring .score-text{font-size:28px;font-weight:800;z-index:1;}
+.ats-score-label{font-size:12px;color:var(--muted);font-weight:500;}
+
+.ats-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.ats-metric{
+  padding:14px;border-radius:var(--r);
+  background:rgba(255,255,255,.02);border:1px solid var(--border);
+  transition:var(--transition);
+}
+.ats-metric:hover{border-color:var(--border-glow);background:rgba(255,255,255,.03);}
+.ats-metric-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
+.ats-metric-value{font-size:18px;font-weight:800;margin-top:4px;}
+.ats-metric-bar{height:4px;border-radius:2px;background:var(--border);margin-top:8px;overflow:hidden;}
+.ats-metric-fill{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+
+.ats-section{margin-bottom:18px;}
+.ats-section-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.ats-tag{
+  display:inline-block;padding:3px 10px;border-radius:20px;
+  font-size:10.5px;font-weight:600;margin:3px;transition:var(--transition);
+}
+.ats-tag.found{background:rgba(16,185,129,.1);color:var(--green2);border:1px solid rgba(16,185,129,.18);}
+.ats-tag.missing{background:rgba(239,68,68,.08);color:var(--red2);border:1px solid rgba(239,68,68,.15);}
+.ats-tag:hover{transform:scale(1.05);}
+.ats-suggestion-list{list-style:none;padding:0;}
+.ats-suggestion-list li{
+  font-size:12px;color:var(--text-secondary);padding:8px 12px;
+  border-radius:8px;margin-bottom:4px;line-height:1.5;
+  background:rgba(255,255,255,.015);border:1px solid transparent;
+  transition:var(--transition);display:flex;gap:8px;
+}
+.ats-suggestion-list li:hover{border-color:var(--border);background:rgba(255,255,255,.03);}
+.ats-suggestion-list li::before{content:'→';color:var(--accent2);font-weight:700;flex-shrink:0;}
+
+/* ─── WORD COUNT BADGE ─── */
+.word-badge{
+  font-size:10.5px;padding:3px 10px;border-radius:20px;font-weight:600;
+  background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);
+}
+
+/* ─── SHORTCUT HINT ─── */
+.shortcut-hint{
+  font-size:10px;color:var(--subtle);font-weight:500;
+  display:flex;align-items:center;gap:4px;
+}
+.shortcut-hint kbd{
+  display:inline-block;padding:1px 5px;border-radius:3px;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  font-family:inherit;font-size:9.5px;font-weight:600;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-glow);border-radius:10px;}
+::-webkit-scrollbar-thumb:hover{background:var(--border-hover);}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:960px){
+  .topbar{padding:10px 16px;}
+  .nav-tabs{padding:0 16px;}
+  .panel-header{padding:12px 16px;}
+  .pipeline-container{padding:12px 16px;}
+  textarea{padding:16px;}
+  .pipe-step{font-size:10px;padding:4px 10px;}
+  .pipe-step .step-label{display:none;}
+  .ats-drawer{width:100vw;}
+}
+
+/* ─── FOCUS ─── */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<!-- ═══ TOPBAR ═══ -->
+<header class="topbar" role="banner">
+  <div class="logo">
+    <div class="logo-icon" aria-hidden="true">📄</div>
+    <div>
+      <div class="logo-text">ATS Resume Builder</div>
+      <div class="logo-sub">AI-Powered Resume Optimization</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="provider-badge openai" id="providerBadge" title="Current AI provider">
+      <span id="providerIcon">🟢</span>
+      <span id="providerLabel">OpenAI</span>
+    </span>
+    <button class="btn btn-icon btn-ghost" id="btnSettings" title="Settings" aria-label="Open settings">⚙️</button>
+    <button class="btn btn-ghost" id="btnClear" aria-label="Clear all">🗑️ Clear</button>
+    <button class="btn btn-primary" id="btnGenerate" aria-label="Generate resume">
+      <span>⚡</span> Generate
+      <span class="shortcut-hint" style="margin-left:4px;"><kbd>Ctrl</kbd>+<kbd>↵</kbd></span>
+    </button>
+  </div>
+</header>
+
+<!-- ═══ NAV TABS ═══ -->
+<nav class="nav-tabs" role="tablist" aria-label="Main navigation">
+  <button class="nav-tab active" data-tab="generator" role="tab" aria-selected="true" aria-controls="tab-generator">
+    ⚡ Generator <span class="tab-badge">AI</span>
+  </button>
+  <button class="nav-tab" data-tab="converter" role="tab" aria-selected="false" aria-controls="tab-converter">
+    📄 Compile &amp; Score
+  </button>
+</nav>
+
+<!-- ═══ TAB 1: GENERATOR ═══ -->
+<div class="tab-content active" id="tab-generator" role="tabpanel">
+<div class="main">
+  <!-- LEFT: JD INPUT -->
+  <div class="panel" role="region" aria-label="Job description input">
+    <div class="panel-header">
+      <div class="panel-title"><span class="icon">📋</span> Job Description</div>
+      <span class="word-badge" id="jdCount">0 words</span>
+    </div>
+    <div class="resume-bar">
+      <span class="resume-bar-label">📄 Base Resume</span>
+      <span class="resume-bar-status" id="resumeStatus">No resume loaded — upload your .tex file</span>
+      <button class="btn btn-ghost" style="font-size:11px;padding:5px 12px;" id="btnUploadResume">📂 Upload .tex</button>
+      <button class="btn btn-ghost" style="font-size:11px;padding:5px 12px;display:none;" id="btnClearResume">✕</button>
+      <input type="file" id="resumeFileInput" accept=".tex" style="display:none;" aria-hidden="true">
+    </div>
+    <div class="panel-body">
+      <textarea class="jd-input" id="jdInput" aria-label="Paste job description here" placeholder="Paste the full Job Description here...
+
+Workflow:
+1. Upload your base resume .tex file above
+2. Paste the JD here
+3. Click Generate — AI will tweak your resume for this JD
+
+Your resume format stays exactly the same!"></textarea>
+    </div>
+    <div class="pipeline-container" id="pipelineContainer">
+      <div class="pipeline" id="pipeline" role="progressbar" aria-label="Generation progress">
+        <div class="pipe-step" data-step="analyze">
+          <span class="step-num">1</span>
+          <span class="step-label">Analyze JD</span>
+        </div>
+        <div class="pipe-connector"></div>
+        <div class="pipe-step" data-step="tailor">
+          <span class="step-num">2</span>
+          <span class="step-label">Tailor Resume</span>
+        </div>
+        <div class="pipe-connector"></div>
+        <div class="pipe-step" data-step="review">
+          <span class="step-num">3</span>
+          <span class="step-label">ATS Review</span>
+        </div>
+        <div class="pipe-connector"></div>
+        <div class="pipe-step" data-step="finalize">
+          <span class="step-num">4</span>
+          <span class="step-label">Finalize</span>
+        </div>
+      </div>
+    </div>
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Ready — paste a JD and click Generate</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: OUTPUT -->
+  <div class="panel" style="position:relative;" role="region" aria-label="Generated resume output">
+    <div class="panel-header">
+      <div class="panel-title"><span class="icon">📝</span> Generated LaTeX</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-icon-sm" id="btnCopy" title="Copy to clipboard" aria-label="Copy LaTeX code">📋</button>
+        <button class="btn btn-success" style="font-size:11px;" id="btnDownload" aria-label="Download .tex file">💾 Download .tex</button>
+      </div>
+    </div>
+    <div class="panel-body" id="outputPanel">
+      <div class="empty-state" id="outputEmpty">
+        <div class="empty-state-icon">✨</div>
+        <div class="empty-state-title">No resume generated yet</div>
+        <div class="empty-state-desc">1. Upload your base resume (.tex) → 2. Paste a JD → 3. Click Generate. The AI will tweak your resume for this JD while keeping your exact format.</div>
+        <div class="empty-state-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd> to generate</div>
+      </div>
+      <textarea id="output" placeholder="" style="display:none;" readonly aria-label="Generated LaTeX output"></textarea>
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingLabel">Processing...</div>
+      </div>
+    </div>
+    <div class="status-bar">
+      <span id="outputStatus">Waiting for generation</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ TAB 2: CONVERTER ═══ -->
+<div class="tab-content" id="tab-converter" role="tabpanel">
+<div class="pdf-layout">
+  <!-- LEFT: LaTeX Input -->
+  <div class="pdf-input-panel" role="region" aria-label="LaTeX source input">
+    <div class="panel-header">
+      <div class="panel-title"><span class="icon">📝</span> LaTeX Source</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost" style="font-size:11px;" id="btnLoadFromGen">📥 From Generator</button>
+        <button class="btn btn-ghost" style="font-size:11px;" id="btnUploadTex" aria-label="Upload .tex file">📂 Upload</button>
+        <input type="file" id="texFileInput" accept=".tex" style="display:none;" aria-hidden="true">
+      </div>
+    </div>
+    <div class="panel-body">
+      <textarea id="texInput" aria-label="Paste or load LaTeX code here" placeholder="Paste or load LaTeX code here..."></textarea>
+    </div>
+    <div class="pdf-action-bar">
+      <button class="btn btn-primary" id="btnCompile" style="flex:1;">🔨 Compile to PDF</button>
+      <button class="btn btn-success" id="btnAtsScore">📊 ATS Score</button>
+    </div>
+  </div>
+  <!-- RIGHT: PDF Preview -->
+  <div class="pdf-preview-panel" role="region" aria-label="PDF preview">
+    <div class="panel-header">
+      <div class="panel-title" id="pdfTitle"><span class="icon">📄</span> PDF Preview</div>
+      <button class="btn btn-success" style="font-size:11px;" id="btnDownloadPdf" aria-label="Download PDF">💾 Download PDF</button>
+    </div>
+    <div class="pdf-preview-area" id="pdfPreviewArea">
+      <div class="empty-state">
+        <div class="empty-state-icon">📄</div>
+        <div class="empty-state-title">Preview your resume</div>
+        <div class="empty-state-desc">Paste LaTeX code and click <strong>Compile to PDF</strong> to see a live preview. You can also upload a .tex file.</div>
+      </div>
+    </div>
+    <div class="loading-overlay" id="pdfLoading">
+      <div class="spinner"></div>
+      <div class="loading-text">Compiling LaTeX...</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div class="modal-backdrop" id="settingsBackdrop"></div>
+<div class="modal" id="settingsModal" role="dialog" aria-label="Settings" aria-modal="true">
+  <div class="modal-header">
+    <div class="modal-title">⚙️ Settings</div>
+    <button class="btn btn-icon-sm btn-ghost" id="btnCloseSettings" aria-label="Close settings">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="modal-field">
+      <label class="modal-label">AI Provider</label>
+      <select class="modal-select" id="provider" aria-label="Select AI provider">
+        <option value="openai">OpenAI — GPT-4o-mini</option>
+        <option value="anthropic">Anthropic — Claude Haiku</option>
+      </select>
+      <div class="field-hint">GPT-4o-mini is fastest. Claude Haiku is cheaper. Both produce great results.</div>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">OpenAI API Key</label>
+      <input type="password" class="modal-input" id="keyOpenai" placeholder="sk-proj-..." aria-label="OpenAI API key">
+      <div class="key-status unset" id="keyStatusOpenai">○ Not set</div>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Anthropic API Key</label>
+      <input type="password" class="modal-input" id="keyAnthropic" placeholder="sk-ant-..." aria-label="Anthropic API key">
+      <div class="key-status unset" id="keyStatusAnthropic">○ Not set</div>
+    </div>
+    <div class="field-hint" style="margin-top:8px;">🔒 Keys are stored locally in your browser (localStorage). Never sent anywhere except the provider's API.</div>
+  </div>
+</div>
+
+<!-- ═══ ATS SCORE DRAWER ═══ -->
+<div class="ats-drawer-backdrop" id="atsBackdrop"></div>
+<div class="ats-drawer" id="atsDrawer" role="dialog" aria-label="ATS Score Analysis">
+  <div class="ats-drawer-header">
+    <div class="panel-title" style="font-size:15px;">📊 ATS Analysis</div>
+    <button class="btn btn-icon-sm btn-ghost" id="btnCloseAts" aria-label="Close ATS panel">✕</button>
+  </div>
+  <div class="ats-drawer-body" id="atsContent">
+    <div class="empty-state" style="padding:40px 20px;">
+      <div class="empty-state-icon">📊</div>
+      <div class="empty-state-title">No analysis yet</div>
+      <div class="empty-state-desc">Click ATS Score in the converter tab to analyze your resume.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST CONTAINER ═══ -->
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// MASTER RESUME TEMPLATE
+// ═══════════════════════════════════════════════════════════════════════════
+const STORAGE_KEY = 'atsResumeBuilder';
+const MASTER_RESUME = `%-------------------------
+% Resume in Latex
+%------------------------
+
+\\documentclass[letterpaper,11pt]{article}
+
+\\usepackage{latexsym}
+\\usepackage[empty]{fullpage}
+\\usepackage{titlesec}
+\\usepackage{marvosym}
+\\usepackage[usenames,dvipsnames]{xcolor}
+\\usepackage{verbatim}
+\\usepackage{enumitem}
+\\usepackage[hidelinks]{hyperref}
+\\usepackage[english]{babel}
+\\usepackage{tabularx}
+\\usepackage{fontawesome5}
+\\usepackage{multicol}
+\\usepackage{graphicx}
+\\setlength{\\multicolsep}{-3.0pt}
+\\setlength{\\columnsep}{-1pt}
+\\input{glyphtounicode}
+
+\\usepackage{tikz}
+
+\\definecolor{cvblue}{HTML}{0E5484}
+\\definecolor{black}{HTML}{130810}
+\\definecolor{darkcolor}{HTML}{0F4539}
+\\definecolor{cvgreen}{HTML}{3BD80D}
+\\definecolor{taggreen}{HTML}{00E278}
+\\definecolor{SlateGrey}{HTML}{2E2E2E}
+\\definecolor{LightGrey}{HTML}{666666}
+\\colorlet{name}{black}
+\\colorlet{tagline}{darkcolor}
+\\colorlet{heading}{darkcolor}
+\\colorlet{headingrule}{cvblue}
+\\colorlet{accent}{darkcolor}
+\\colorlet{emphasis}{SlateGrey}
+\\colorlet{body}{LightGrey}
+
+% Adjust margins
+\\addtolength{\\oddsidemargin}{-0.6in}
+\\addtolength{\\evensidemargin}{-0.5in}
+\\addtolength{\\textwidth}{1.19in}
+\\addtolength{\\topmargin}{-.7in}
+\\addtolength{\\textheight}{1.4in}
+
+\\urlstyle{same}
+\\raggedbottom
+\\raggedright
+\\setlength{\\tabcolsep}{0in}
+
+\\titleformat{\\section}{
+  \\vspace{-4pt}\\scshape\\raggedright\\large\\bfseries
+}{}{0em}{}[\\color{black}\\titlerule \\vspace{-5pt}]
+
+\\pdfgentounicode=1
+
+\\newcommand{\\resumeItem}[1]{
+  \\item\\small{
+    {#1 \\vspace{-2pt}}
+  }
+}
+
+\\newcommand{\\classesList}[4]{
+    \\item\\small{
+        {#1 #2 #3 #4 \\vspace{-2pt}}
+  }
+}
+
+\\newcommand{\\resumeSubheading}[4]{
+  \\vspace{-2pt}\\item
+    \\begin{tabular*}{1.0\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
+      \\textbf{\\large#1} & \\textbf{\\small #2} \\\\
+      \\textit{\\large#3} & \\textit{\\small #4} \\\\
+    \\end{tabular*}\\vspace{-7pt}
+}
+
+\\newcommand{\\resumeSubSubheading}[2]{
+    \\item
+    \\begin{tabular*}{0.97\\textwidth}{l@{\\extracolsep{\\fill}}r}
+      \\textit{\\small#1} & \\textit{\\small #2} \\\\
+    \\end{tabular*}\\vspace{-7pt}
+}
+
+\\newcommand{\\resumeProjectHeading}[2]{
+    \\item
+    \\begin{tabular*}{1.001\\textwidth}{l@{\\extracolsep{\\fill}}r}
+      \\small#1 & \\textbf{\\small #2}\\\\
+    \\end{tabular*}\\vspace{-7pt}
+}
+
+\\newcommand{\\resumeSubItem}[1]{\\resumeItem{#1}\\vspace{-4pt}}
+
+\\renewcommand\\labelitemi{$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}
+\\renewcommand\\labelitemii{$\\vcenter{\\hbox{\\tiny$\\bullet$}}$}
+
+\\newcommand{\\resumeSubHeadingListStart}{\\begin{itemize}[leftmargin=0.0in, label={}]}
+\\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}
+\\newcommand{\\resumeItemListStart}{\\begin{itemize}}
+\\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-5pt}}
+
+\\begin{document}
+
+\\begin{center}
+    {\\Huge \\scshape Abhishek Mohanty} \\\\ \\vspace{1pt}
+    Bengaluru, Karnataka \\\\ \\vspace{1pt}
+    \\small \\href{tel:#}{ \\raisebox{-0.1\\height}\\faPhone\\ \\underline{+91-8287977134} ~}
+    \\href{mailto:abhishekmohantyranjan@gmail.com}{\\raisebox{-0.2\\height}\\faEnvelope\\ \\underline{abhishekmohantyranjan@gmail.com}} ~
+    \\href{https://www.linkedin.com/in/abhishek-mohanty-7057102a8/}{\\raisebox{-0.2\\height}\\faLinkedinSquare\\ \\underline{Linkedin}} ~
+    \\href{https://github.com/AmsterAbhi}{\\raisebox{-0.2\\height}\\faGithub\\ \\underline{Github}} ~
+    \\vspace{-8pt}
+\\end{center}
+
+\\vspace{0.5mm}
+
+\\section{EDUCATION}
+  \\resumeSubHeadingListStart
+    \\resumeSubheading
+      {SJB Institute of Technology (SJBIT), Bengaluru}{2021 -- 2025}
+      {B.E. in Information Science and Engineering -- \\textbf{CGPA: 8.7}}{Bengaluru, Karnataka}
+  \\resumeSubHeadingListEnd
+
+\\section{TECHNICAL SKILLS}
+\\begin{itemize}[leftmargin=0.15in, label={}]
+\\small{\\item{
+\\textbf{Languages:} C\\#, Python, JavaScript, TypeScript, SQL, C++ \\\\
+\\textbf{Backend:} ASP.NET Core, .NET, REST APIs, FastAPI, OpenAPI (Swagger), Microservices, Authentication, Middleware \\\\
+\\textbf{Frontend:} Angular, HTML5, CSS3\\\\
+\\textbf{Databases:} SQL Server, MySQL \\\\
+\\textbf{AI \\& Automation:} Azure OpenAI, AI Agents, Workflow Automation, Playwright \\\\
+\\textbf{Cloud \\& DevOps:} Microsoft Azure, CI/CD(Basics), Docker, Git \\\\
+\\textbf{Core Concepts:} OOP, Data Structures \\& Algorithms, Operating Systems, Computer Networks, Unit Testing, SDLC, Agile/Scrum \\\\
+\\textbf{Tools:} Visual Studio, VS Code, SSMS, Postman, Jira, GitHub
+}}
+\\end{itemize}
+
+\\section{WORK EXPERIENCE}
+\\resumeSubHeadingListStart
+
+\\resumeSubheading
+  {Flatworld AI}{August 2025 -- August 2026}
+  {\\underline{Associate Software Engineer}}{Bengaluru, India}
+\\resumeItemListStart
+  \\resumeItem{\\normalsize{Developed and maintained full-stack enterprise web applications using .NET, Angular, TypeScript, SQL Server, and REST APIs, delivering new features and resolving production defects.}}
+  \\resumeItem{\\normalsize{Built microservices-based features involving Encompass integration, document classification, data extraction, MISMO XML processing, and validation workflows.}}
+  \\resumeItem{\\normalsize{Designed and engineered AI-powered automation agents leveraging Azure OpenAI, streamlining repetitive business processes across the SDLC.}}
+  \\resumeItem{\\normalsize{Collaborated with cross-functional teams including product owners, QA engineers, and developers in Agile sprints, demonstrating strong communication and problem-solving skills.}}
+\\resumeItemListEnd
+
+\\vspace{3pt}
+
+\\resumeSubheading
+  {Flatworld AI}{March 2025 -- July 2025}
+  {\\underline{Software Trainee}}{Bengaluru, India}
+\\resumeItemListStart
+  \\resumeItem{\\normalsize{Gained proficiency in .NET, Angular, Python, SQL Server, and Azure Cloud while delivering enterprise solutions following Agile methodologies.}}
+  \\resumeItem{\\normalsize{Developed and maintained RESTful APIs using .NET and Python, collaborating with frontend developers to deliver end-to-end applications.}}
+  \\resumeItem{\\normalsize{Executed full SDLC activities including requirement analysis, development, debugging, unit testing, deployment, and production support.}}
+  \\resumeItem{\\normalsize{Built AI-enabled internal tools including an AI-powered Chatbot and an Email Automation System to enhance team productivity.}}
+\\resumeItemListEnd
+
+\\resumeSubHeadingListEnd
+
+\\section{PROJECTS}
+\\vspace{5pt}
+\\resumeSubHeadingListStart
+
+\\resumeProjectHeading
+{\\textbf{\\large{Higgs Enterprise -- AI Workflow Automation}} $|$ \\small\\textit{WPF, C\\#, FastAPI, Python, Azure OpenAI}}{2026}
+\\resumeItemListStart
+  \\resumeItem{\\normalsize{Engineered an AI-powered desktop application using WPF (.NET 9) and C\\# to capture and automate user workflows through screenshots and event tracking.}}
+  \\resumeItem{\\normalsize{Built RESTful backend services using FastAPI (Python) and integrated Azure Blob Storage for secure cloud-based data storage and retrieval.}}
+  \\resumeItem{\\normalsize{Leveraged Azure OpenAI GPT-4o Vision to analyze screenshots and generate structured automation steps, evaluating emerging AI trends for continuous improvement.}}
+\\resumeItemListEnd
+
+\\resumeSubHeadingListEnd
+\\end{document}`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// KNOWLEDGE BASE
+// ═══════════════════════════════════════════════════════════════════════════
+const KNOWLEDGE_BASE = `
+CANDIDATE: Abhishek Mohanty
+LOCATION: Bengaluru, Karnataka
+EDUCATION: B.E. Information Science and Engineering, SJBIT (2021-2025), CGPA 8.7
+
+TECHNOLOGIES (exhaustive - do NOT add anything not listed):
+- Languages: C#, Python, JavaScript, TypeScript, SQL, C++
+- Backend: ASP.NET Core, .NET, REST APIs, FastAPI, OpenAPI (Swagger), Microservices, Authentication, Middleware
+- Frontend: Angular, HTML5, CSS3
+- Databases: SQL Server, MySQL
+- AI & Automation: Azure OpenAI, AI Agents, Workflow Automation, Playwright
+- Cloud & DevOps: Microsoft Azure, CI/CD (Basics), Docker, Git
+- Core: OOP, Data Structures & Algorithms, OS, Computer Networks, Unit Testing, SDLC, Agile/Scrum
+- Tools: Visual Studio, VS Code, SSMS, Postman, Jira, GitHub
+
+WORK EXPERIENCE:
+1. Associate Software Engineer @ Flatworld AI (Aug 2025 - Aug 2026)
+   - Enterprise web apps: .NET, Angular, TypeScript, SQL Server, REST APIs
+   - Microservices: Encompass integration, document classification, data extraction, MISMO XML, validation workflows
+   - AI-powered automation agents using Azure OpenAI
+   - Agile sprints, cross-functional collaboration, communication, problem-solving
+
+2. Software Trainee @ Flatworld AI (Mar 2025 - Jul 2025)
+   - Proficiency: .NET, Angular, Python, SQL Server, Azure Cloud
+   - Full SDLC: requirement analysis, development, debugging, unit testing, deployment
+   - RESTful APIs using .NET and Python
+   - AI-powered Chatbot, Email Automation System
+
+PROFESSIONAL PROJECT:
+- Higgs Enterprise - AI Workflow Automation (2026)
+  Tech: WPF (.NET 9), C#, FastAPI, Python, Azure Blob Storage, Azure OpenAI
+  - Desktop app capturing screenshots, mouse/keyboard events
+  - FastAPI backend + Azure Blob Storage
+  - Azure OpenAI GPT-4o Vision for screenshot analysis
+  - Evaluated emerging AI trends
+
+ACADEMIC PROJECTS:
+- Voting Management System: React, TailwindCSS, Node.js, MySQL
+  - Full-stack voting app, React UI, Node.js backend, MySQL database
+  - Security measures, real-time data updates
+
+- Recipe Application: React, Node.js, Express.js, MongoDB, HTML, CSS
+  - Full-stack recipe app
+  - Filtering, sorting, async API fetching
+  - Responsive interface
+
+DOMAIN EXPERIENCE: Encompass, document classification, data extraction, MISMO XML, Rule Engine, validation workflows, mortgage processing
+SOFT SKILLS: Communication, problem-solving, teamwork, collaboration
+`;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SYSTEM PROMPT
+// ═══════════════════════════════════════════════════════════════════════════
+const SYSTEM_PROMPT = `You are an Expert Resume Tailoring Agent. Your job is to MODIFY an existing LaTeX resume to be ATS-optimized for a specific Job Description.
+
+CRITICAL APPROACH:
+- You are given the candidate's ORIGINAL resume LaTeX code
+- You must PRESERVE the exact LaTeX structure, formatting, commands, and layout
+- ONLY modify the CONTENT (bullet text, skill ordering, section ordering) to match the JD
+- Do NOT change the document class, packages, command definitions, margins, or any formatting code
+- Do NOT create a new resume from scratch — tweak the existing one
+
+WHAT YOU CAN MODIFY:
+- Reorder skills within the Technical Skills section to prioritize JD-matching ones
+- Reword bullet points to use JD terminology (only if truthful)
+- Reorder sections if it helps (e.g., move Work Experience above Projects if JD emphasizes experience)
+- Remove less-relevant bullets or projects if space is tight
+- Strengthen weak verbs
+- Add JD keywords into existing bullet points naturally
+
+WHAT YOU MUST NOT DO:
+- Do NOT add new skills, technologies, projects, or experiences that don't exist in the original
+- Do NOT change the LaTeX template/structure/commands/formatting
+- Do NOT invent metrics, certifications, or responsibilities
+- Do NOT add new sections that don't exist in the original
+- Do NOT change personal information (name, contact, education dates/GPA)
+
+LATEX COMPATIBILITY FIXES (ALWAYS apply these to ensure compilation works):
+- Remove \\usetikzlibrary{svg.path} if present (not available on all servers)
+- If both \\usepackage{color} and \\usepackage{xcolor} exist, keep only xcolor
+- Remove duplicate \\RequirePackage{tikz} if \\usepackage{tikz} already exists
+- Remove duplicate \\RequirePackage{xcolor} if \\usepackage{xcolor} already exists
+- Ensure \\usepackage{fontawesome5} is present (not fontawesome)
+
+ATS KEYWORD STRATEGY:
+- Mirror exact phrases from the JD wherever truthful
+- Place the most important JD keywords in the first bullet of each section
+- Use both acronym and full form at least once (e.g., "CI/CD (Continuous Integration/Continuous Deployment)")
+- Include soft skills (communication, problem-solving, collaboration) woven into experience bullets
+
+STRONG ACTION VERBS:
+- Use: Developed, Designed, Implemented, Built, Integrated, Optimized, Engineered, Automated, Collaborated, Delivered
+- Avoid: Worked on, Responsible for, Helped, Participated in, Completed training
+
+OUTPUT: Return ONLY the modified LaTeX code. No explanations. No markdown fences. No comments about what changed. Just the complete, compilable LaTeX.`;
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════════
+let config = loadConfig();
+
+function loadConfig(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if(saved && saved.keys) return saved;
+  }catch(e){}
+  return { provider:'openai', keys:{ openai:'', anthropic:'' } };
+}
+function saveConfig(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DOM REFS
+// ═══════════════════════════════════════════════════════════════════════════
+const _$ = id => document.getElementById(id);
+
+const els = {
+  provider: _$('provider'),
+  keyOpenai: _$('keyOpenai'),
+  keyAnthropic: _$('keyAnthropic'),
+  jdInput: _$('jdInput'),
+  jdCount: _$('jdCount'),
+  output: _$('output'),
+  outputEmpty: _$('outputEmpty'),
+  outputPanel: _$('outputPanel'),
+  btnGenerate: _$('btnGenerate'),
+  btnCopy: _$('btnCopy'),
+  btnDownload: _$('btnDownload'),
+  btnClear: _$('btnClear'),
+  statusDot: _$('statusDot'),
+  statusText: _$('statusText'),
+  outputStatus: _$('outputStatus'),
+  loadingOverlay: _$('loadingOverlay'),
+  loadingLabel: _$('loadingLabel'),
+  pipeline: _$('pipeline'),
+  providerBadge: _$('providerBadge'),
+  providerIcon: _$('providerIcon'),
+  providerLabel: _$('providerLabel'),
+  settingsBackdrop: _$('settingsBackdrop'),
+  settingsModal: _$('settingsModal'),
+  atsBackdrop: _$('atsBackdrop'),
+  atsDrawer: _$('atsDrawer'),
+  atsContent: _$('atsContent'),
+  toastContainer: _$('toastContainer'),
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+els.provider.value = config.provider || 'openai';
+els.keyOpenai.value = config.keys?.openai || '';
+els.keyAnthropic.value = config.keys?.anthropic || '';
+if(config.lastJD) els.jdInput.value = config.lastJD;
+updateWordCount();
+updateProviderBadge();
+updateKeyStatuses();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SETTINGS MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+_$('btnSettings').addEventListener('click', openSettings);
+_$('btnCloseSettings').addEventListener('click', closeSettings);
+els.settingsBackdrop.addEventListener('click', closeSettings);
+
+function openSettings(){
+  els.settingsBackdrop.classList.add('show');
+  els.settingsModal.classList.add('show');
+  els.provider.focus();
+}
+function closeSettings(){
+  els.settingsBackdrop.classList.remove('show');
+  els.settingsModal.classList.remove('show');
+}
+
+els.provider.addEventListener('change', ()=>{
+  config.provider = els.provider.value;
+  saveConfig(); updateProviderBadge();
+});
+els.keyOpenai.addEventListener('input', ()=>{
+  config.keys.openai = els.keyOpenai.value;
+  saveConfig(); updateKeyStatuses();
+});
+els.keyAnthropic.addEventListener('input', ()=>{
+  config.keys.anthropic = els.keyAnthropic.value;
+  saveConfig(); updateKeyStatuses();
+});
+
+function updateProviderBadge(){
+  const p = config.provider;
+  els.providerBadge.className = 'provider-badge ' + p;
+  if(p === 'openai'){ els.providerIcon.textContent = '🟢'; els.providerLabel.textContent = 'OpenAI'; }
+  else { els.providerIcon.textContent = '🟠'; els.providerLabel.textContent = 'Anthropic'; }
+}
+function updateKeyStatuses(){
+  const setO = !!config.keys?.openai;
+  const setA = !!config.keys?.anthropic;
+  _$('keyStatusOpenai').className = 'key-status ' + (setO?'set':'unset');
+  _$('keyStatusOpenai').textContent = setO ? '● Key saved' : '○ Not set';
+  _$('keyStatusAnthropic').className = 'key-status ' + (setA?'set':'unset');
+  _$('keyStatusAnthropic').textContent = setA ? '● Key saved' : '○ Not set';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════════════════════════════════════
+els.jdInput.addEventListener('input', ()=>{
+  config.lastJD = els.jdInput.value; saveConfig(); updateWordCount();
+});
+
+els.btnGenerate.addEventListener('click', generate);
+els.btnCopy.addEventListener('click', copyOutput);
+els.btnDownload.addEventListener('click', downloadTex);
+els.btnClear.addEventListener('click', ()=>{
+  els.jdInput.value=''; els.output.value=''; els.output.style.display='none';
+  els.outputEmpty.style.display=''; config.lastJD=''; saveConfig();
+  updateWordCount(); setStatus('ready','Ready — paste a JD and click Generate');
+  els.outputStatus.textContent='Waiting for generation'; resetPipeline();
+});
+
+// Resume upload
+let uploadedResume = config.lastResume || '';
+_$('btnUploadResume').addEventListener('click',()=>_$('resumeFileInput').click());
+_$('resumeFileInput').addEventListener('change', ev=>{
+  const file = ev.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    uploadedResume = r.result;
+    config.lastResume = uploadedResume; saveConfig();
+    updateResumeStatus(file.name);
+    showToast('Resume loaded: '+file.name,'success');
+  };
+  r.readAsText(file);
+});
+_$('btnClearResume').addEventListener('click', ()=>{
+  uploadedResume = ''; config.lastResume = ''; saveConfig();
+  _$('resumeStatus').textContent = 'No resume loaded — upload your .tex file';
+  _$('resumeStatus').className = 'resume-bar-status';
+  _$('btnClearResume').style.display = 'none';
+});
+function updateResumeStatus(name){
+  _$('resumeStatus').innerHTML = `<span class="file-name">📄 ${escHtml(name||'resume.tex')}</span> loaded`;
+  _$('resumeStatus').className = 'resume-bar-status loaded';
+  _$('btnClearResume').style.display = '';
+}
+if(uploadedResume) updateResumeStatus();
+
+// Keyboard shortcut: Ctrl+Enter to generate
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+    e.preventDefault(); generate();
+  }
+  if(e.key === 'Escape'){
+    closeSettings();
+    closeAtsDrawer();
+  }
+});
+
+function updateWordCount(){
+  const w = els.jdInput.value.trim().split(/\s+/).filter(Boolean).length;
+  els.jdCount.textContent = w + ' words';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PIPELINE UI
+// ═══════════════════════════════════════════════════════════════════════════
+function resetPipeline(){
+  document.querySelectorAll('.pipe-step').forEach(s => s.className = 'pipe-step');
+  document.querySelectorAll('.pipe-connector').forEach(c => c.className = 'pipe-connector');
+}
+function setPipeStep(step, state){
+  const steps = ['analyze','tailor','review','finalize'];
+  const idx = steps.indexOf(step);
+  const el = document.querySelector(`.pipe-step[data-step="${step}"]`);
+  if(el) el.className = 'pipe-step ' + state;
+  const connectors = document.querySelectorAll('.pipe-connector');
+  if(state === 'done' && idx < connectors.length){
+    connectors[idx].className = 'pipe-connector done';
+  }
+}
+function setStatus(state, text){
+  els.statusDot.className = 'status-dot' + (state==='active'?' active':state==='done'?' done':state==='error'?' error':'');
+  els.statusText.textContent = text;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TOAST SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+function showToast(msg, type='info'){
+  const icons = {success:'✅', error:'❌', info:'💡'};
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = `<span class="toast-icon">${icons[type]||icons.info}</span><span>${escHtml(msg)}</span>`;
+  els.toastContainer.appendChild(toast);
+  requestAnimationFrame(()=> toast.classList.add('show'));
+  setTimeout(()=>{
+    toast.classList.remove('show');
+    setTimeout(()=> toast.remove(), 300);
+  }, 3000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// API CALL
+// ═══════════════════════════════════════════════════════════════════════════
+function getActiveKey(){
+  return config.keys?.[config.provider] || '';
+}
+
+async function callLLM(messages){
+  const key = getActiveKey();
+  if(!key) throw new Error('API key is required — open Settings (⚙️) to add your key');
+
+  const provider = config.provider;
+
+  if(provider === 'anthropic'){
+    const system = messages.find(m=>m.role==='system')?.content || '';
+    const userMsgs = messages.filter(m=>m.role!=='system').map(m=>({role:m.role,content:m.content}));
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({model:'claude-haiku-4-20250506', max_tokens:8192, system, messages:userMsgs})
+    });
+    if(!res.ok) throw new Error(`Anthropic API error: ${res.status} ${await res.text()}`);
+    const data = await res.json();
+    return data.content[0].text;
+  } else {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+      body: JSON.stringify({model:'gpt-4o-mini', messages, temperature:0.3, max_tokens:8192})
+    });
+    if(!res.ok) throw new Error(`OpenAI API error: ${res.status} ${await res.text()}`);
+    const data = await res.json();
+    return data.choices[0].message.content;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GENERATE
+// ═══════════════════════════════════════════════════════════════════════════
+async function generate(){
+  const jd = els.jdInput.value.trim();
+  if(!jd){ showToast('Paste a Job Description first','error'); return; }
+  if(!uploadedResume){ showToast('Upload your base resume .tex file first','error'); return; }
+  if(!getActiveKey()){
+    showToast('Add your API key in Settings first','error');
+    openSettings(); return;
+  }
+
+  // Split resume into preamble (never changes) and body (AI modifies this only)
+  const docStart = uploadedResume.indexOf('\\begin{document}');
+  const docEnd = uploadedResume.lastIndexOf('\\end{document}');
+  if(docStart === -1){
+    showToast('Invalid LaTeX: missing \\begin{document}','error'); return;
+  }
+  const preamble = uploadedResume.substring(0, docStart + '\\begin{document}'.length);
+  const body = uploadedResume.substring(docStart + '\\begin{document}'.length, docEnd !== -1 ? docEnd : undefined).trim();
+
+  els.btnGenerate.disabled = true;
+  els.loadingOverlay.classList.add('show');
+  els.output.style.display = 'none';
+  els.outputEmpty.style.display = 'none';
+  resetPipeline();
+  setStatus('active','Processing...');
+  els.output.value = '';
+
+  try{
+    // Step 1: JD Analysis (quick, low tokens)
+    setPipeStep('analyze','active');
+    setStatus('active','Step 1/3 — Analyzing Job Description...');
+    els.loadingLabel.textContent = 'Extracting JD keywords...';
+
+    const analysisPrompt = `Extract from this JD in a compact bullet list:
+- Required skills (max 10)
+- Key ATS keywords (max 15)
+- Domain/focus area
+
+JOB DESCRIPTION:
+${jd}
+
+Be very concise. Max 150 words.`;
+
+    const analysis = await callLLM([
+      {role:'system', content:'Extract JD keywords concisely. Max 150 words.'},
+      {role:'user', content: analysisPrompt}
+    ]);
+    setPipeStep('analyze','done');
+
+    // Step 2: Tailor ONLY the body (not the preamble — saves tokens!)
+    setPipeStep('tailor','active');
+    setStatus('active','Step 2/3 — Tailoring resume content...');
+    els.loadingLabel.textContent = 'Optimizing resume for ATS...';
+
+    const tailorPrompt = `Modify ONLY the resume BODY content below to be ATS-optimized for this JD. Do NOT output any preamble, packages, or \\newcommand definitions — I will prepend those myself.
+
+KEY JD REQUIREMENTS:
+${analysis}
+
+RESUME BODY (everything between \\begin{document} and \\end{document}):
+${body}
+
+RULES:
+- Output ONLY the body content (starting from \\begin{center} or first section, ending before \\end{document})
+- Do NOT include \\documentclass, \\usepackage, \\newcommand, \\begin{document}, or \\end{document}
+- Reorder skills to match JD priorities
+- Reword bullets to include JD keywords where truthful
+- Strengthen weak verbs (Developed, Engineered, Built instead of Worked on, Helped)
+- Do NOT add any skills/tech/projects not in the original
+- Keep same section structure
+- No markdown fences, no explanations — just the LaTeX body content`;
+
+    const modifiedBody = await callLLM([
+      {role:'system', content: SYSTEM_PROMPT + '\n\nCRITICAL: Output ONLY the document body content. Do NOT output any preamble (\\documentclass, \\usepackage, \\newcommand, etc). Do NOT include \\begin{document} or \\end{document}. Just the content between them.'},
+      {role:'user', content: tailorPrompt}
+    ]);
+    setPipeStep('tailor','done');
+
+    // Step 3: Reassemble complete document
+    setPipeStep('review','active');
+    setPipeStep('finalize','active');
+    setStatus('active','Step 3/3 — Assembling final document...');
+    els.loadingLabel.textContent = 'Assembling document...';
+
+    let cleanBody = modifiedBody.trim();
+    // Strip markdown fences if present
+    cleanBody = cleanBody.replace(/^```(?:latex|tex)?\s*\n?/,'').replace(/\n?```\s*$/,'');
+    // Remove any accidentally included preamble
+    const accidentalDoc = cleanBody.indexOf('\\begin{document}');
+    if(accidentalDoc !== -1){
+      cleanBody = cleanBody.substring(accidentalDoc + '\\begin{document}'.length).trim();
+    }
+    // Remove any accidentally included \end{document}
+    cleanBody = cleanBody.replace(/\\end\{document\}\s*$/, '').trim();
+
+    // Reassemble: fixed preamble + modified body + closing
+    let finalLatex = fixLatex(preamble) + '\n\n' + cleanBody + '\n\n\\end{document}\n';
+
+    els.output.value = finalLatex;
+    els.output.style.display = '';
+    els.outputEmpty.style.display = 'none';
+    setPipeStep('review','done');
+    setPipeStep('finalize','done');
+    setStatus('done','Complete! Resume generated successfully.');
+    els.outputStatus.textContent = `Generated: ${finalLatex.length} chars · ${finalLatex.split('\n').length} lines`;
+    showToast('Resume generated successfully!','success');
+
+  } catch(err){
+    setStatus('error', 'Error: ' + err.message);
+    document.querySelectorAll('.pipe-step.active').forEach(s=>s.classList.replace('active','error'));
+    els.output.value = '% Error: ' + err.message;
+    els.output.style.display = '';
+    els.outputEmpty.style.display = 'none';
+    els.outputStatus.textContent = 'Generation failed';
+    showToast(err.message,'error');
+  } finally {
+    els.btnGenerate.disabled = false;
+    els.loadingOverlay.classList.remove('show');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COPY / DOWNLOAD
+// ═══════════════════════════════════════════════════════════════════════════
+function copyOutput(){
+  const text = els.output.value;
+  if(!text){ showToast('Nothing to copy','error'); return; }
+  navigator.clipboard.writeText(text)
+    .then(()=>showToast('Copied to clipboard!','success'))
+    .catch(()=>{ els.output.select(); document.execCommand('copy'); showToast('Copied!','success'); });
+}
+
+function downloadTex(){
+  const text = els.output.value;
+  if(!text){ showToast('Nothing to download','error'); return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text],{type:'text/x-tex'}));
+  a.download = 'resume_optimized.tex';
+  a.click();
+  showToast('Downloaded resume_optimized.tex','success');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAV TABS
+// ═══════════════════════════════════════════════════════════════════════════
+document.querySelectorAll('.nav-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-tab').forEach(t=>{
+      t.classList.remove('active'); t.setAttribute('aria-selected','false');
+    });
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected','true');
+    document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONVERTER TAB
+// ═══════════════════════════════════════════════════════════════════════════
+const texInput = _$('texInput');
+const pdfPreviewArea = _$('pdfPreviewArea');
+const pdfLoading = _$('pdfLoading');
+let lastPdfBlob = null;
+
+_$('btnLoadFromGen').addEventListener('click',()=>{
+  const latex = els.output.value;
+  if(!latex){ showToast('No generated resume yet — generate one first','error'); return; }
+  texInput.value = latex;
+  showToast('Loaded LaTeX from generator','success');
+});
+
+_$('btnUploadTex').addEventListener('click',()=>_$('texFileInput').click());
+_$('texFileInput').addEventListener('change',ev=>{
+  const file=ev.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{ texInput.value=r.result; showToast('Loaded: '+file.name,'success'); };
+  r.readAsText(file);
+});
+
+_$('btnCompile').addEventListener('click', ()=> compilePdf(false));
+_$('btnDownloadPdf').addEventListener('click',()=>{
+  if(!lastPdfBlob){ showToast('No PDF generated yet','error'); return; }
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(lastPdfBlob);
+  a.download='resume.pdf'; a.click();
+  showToast('Downloaded resume.pdf','success');
+});
+
+// Auto-fix common LaTeX issues before compiling
+function fixLatex(src){
+  let fixed = src;
+  // Remove problematic svg.path library
+  fixed = fixed.replace(/\\usetikzlibrary\{svg\.path\}\s*\n?/g, '');
+  // Remove duplicate tikz/xcolor RequirePackage if usepackage exists
+  if(fixed.includes('\\usepackage{tikz}')) fixed = fixed.replace(/\\RequirePackage\{tikz\}\s*\n?/g, '');
+  if(fixed.includes('xcolor')) fixed = fixed.replace(/\\RequirePackage\{xcolor\}\s*\n?/g, '');
+  // Replace color package with xcolor
+  fixed = fixed.replace(/\\usepackage\[usenames,dvipsnames\]\{color\}/g, '\\usepackage[usenames,dvipsnames]{xcolor}');
+  // Remove duplicate xcolor loads
+  let xcolorCount = 0;
+  fixed = fixed.replace(/\\usepackage(\[.*?\])?\{xcolor\}/g, (m)=>{ xcolorCount++; return xcolorCount===1? m : ''; });
+  // Remove duplicate tikz loads
+  let tikzCount = 0;
+  fixed = fixed.replace(/\\usepackage\{tikz\}/g, (m)=>{ tikzCount++; return tikzCount===1? m : ''; });
+  return fixed;
+}
+
+async function compilePdf(autoFix = true){
+  let latex = texInput.value.trim();
+  if(!latex){ showToast('Paste LaTeX code first','error'); return; }
+  if(autoFix) latex = fixLatex(latex);
+  pdfLoading.classList.add('show');
+  _$('pdfTitle').innerHTML = '<span class="icon">⏳</span> Compiling...';
+
+  try {
+    const res = await fetch('https://latex.ytotech.com/builds/sync', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        compiler:'pdflatex',
+        resources:[{main:true, content:latex}]
+      })
+    });
+
+    const contentType = res.headers.get('content-type') || '';
+
+    if(contentType.includes('application/pdf')){
+      lastPdfBlob = await res.blob();
+      const url = URL.createObjectURL(lastPdfBlob);
+      pdfPreviewArea.innerHTML = `<iframe src="${url}#toolbar=1&navpanes=0" title="PDF Preview"></iframe>`;
+      _$('pdfTitle').innerHTML = '<span class="icon">📄</span> PDF Preview';
+      showToast('PDF compiled successfully!','success');
+    } else {
+      // API returns JSON with error details on compilation failure
+      const data = await res.json().catch(()=>null);
+      let errorMsg = 'Compilation failed.';
+      if(data && data.log_files){
+        const log = data.log_files['__main_document__.log'] || '';
+        // Extract actual error lines from the log
+        const errorLines = log.split('\n').filter(line =>
+          line.includes('! ') || line.includes('Error') || line.includes('Undefined') ||
+          line.includes('Missing') || line.includes('not found') || line.includes('Fatal') ||
+          line.match(/^l\.\d+/)
+        );
+        if(errorLines.length > 0){
+          errorMsg = 'LaTeX Compilation Errors:\n\n' + errorLines.slice(0,20).join('\n');
+        } else {
+          // Show last 40 lines of log as fallback
+          const logLines = log.split('\n').filter(l=>l.trim());
+          errorMsg = 'Compilation Log (last lines):\n\n' + logLines.slice(-40).join('\n');
+        }
+      } else if(data && data.error){
+        errorMsg = data.error;
+      }
+      throw new Error(errorMsg);
+    }
+  } catch(err){
+    _$('pdfTitle').innerHTML = '<span class="icon">❌</span> Compile Error';
+    pdfPreviewArea.innerHTML = `<div style="color:var(--red2);font-size:12px;font-family:monospace;white-space:pre-wrap;padding:20px;align-self:start;width:100%;line-height:1.7;overflow-y:auto;">${escHtml(err.message)}</div>`;
+    showToast('Compilation failed — see error details','error');
+  } finally {
+    pdfLoading.classList.remove('show');
+  }
+}
+
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ATS SCORING (DRAWER)
+// ═══════════════════════════════════════════════════════════════════════════
+_$('btnAtsScore').addEventListener('click', runAtsScore);
+_$('btnCloseAts').addEventListener('click', closeAtsDrawer);
+els.atsBackdrop.addEventListener('click', closeAtsDrawer);
+
+function openAtsDrawer(){
+  els.atsBackdrop.classList.add('show');
+  els.atsDrawer.classList.add('show');
+}
+function closeAtsDrawer(){
+  els.atsBackdrop.classList.remove('show');
+  els.atsDrawer.classList.remove('show');
+}
+
+async function runAtsScore(){
+  const latex = texInput.value.trim();
+  if(!latex){ showToast('Paste LaTeX code first','error'); return; }
+  if(!getActiveKey()){
+    showToast('Add your API key in Settings first','error');
+    openSettings(); return;
+  }
+
+  openAtsDrawer();
+  els.atsContent.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;padding:60px 20px;gap:16px;">
+      <div class="spinner"></div>
+      <div style="font-size:13px;color:var(--muted);font-weight:500;">Analyzing your resume...</div>
+      <div style="font-size:11px;color:var(--subtle);">This takes 5-10 seconds</div>
+    </div>`;
+
+  try {
+    const jd = els.jdInput.value.trim();
+    const prompt = `Analyze this LaTeX resume and provide an ATS compatibility assessment. Return a JSON object with these exact fields:
+{
+  "overall_score": (0-100),
+  "keyword_score": (0-100),
+  "formatting_score": (0-100),
+  "action_verb_score": (0-100),
+  "readability_score": (0-100),
+  "one_page": true/false,
+  "keywords_found": ["list of ATS keywords found"],
+  "keywords_missing": ["important keywords missing${jd ? ' based on JD' : ''}"],
+  "strong_verbs": ["action verbs used"],
+  "weak_phrases": ["weak phrases found"],
+  "issues": ["list of specific issues"],
+  "suggestions": ["list of improvement suggestions"]
+}
+
+${jd ? 'JOB DESCRIPTION:\n'+jd+'\n\n' : ''}RESUME LaTeX:\n${latex}
+
+Return ONLY the JSON object. No markdown fences. No explanations.`;
+
+    const result = await callLLM([
+      {role:'system', content:'You are an ATS (Applicant Tracking System) expert. Analyze resumes for ATS compatibility. Return only valid JSON.'},
+      {role:'user', content: prompt}
+    ]);
+
+    let cleaned = result.trim().replace(/^```(?:json)?\s*\n?/,'').replace(/\n?```\s*$/,'');
+    const data = JSON.parse(cleaned);
+    renderAtsScore(data);
+  } catch(err){
+    els.atsContent.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;padding:40px 20px;gap:12px;">
+        <div style="font-size:32px;">❌</div>
+        <div style="font-size:13px;color:var(--red2);font-weight:600;">Analysis Failed</div>
+        <div style="font-size:12px;color:var(--muted);text-align:center;">${escHtml(err.message)}</div>
+      </div>`;
+  }
+}
+
+function renderAtsScore(d){
+  const color = d.overall_score >= 80 ? 'var(--green2)' : d.overall_score >= 60 ? 'var(--amber2)' : 'var(--red2)';
+  const grade = d.overall_score >= 90 ? 'A+' : d.overall_score >= 80 ? 'A' : d.overall_score >= 70 ? 'B' : d.overall_score >= 60 ? 'C' : 'D';
+  const circumference = 2 * Math.PI * 42;
+  const offset = circumference - (d.overall_score / 100) * circumference;
+
+  els.atsContent.innerHTML = `
+    <div class="ats-hero">
+      <div class="ats-score-ring">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border)" stroke-width="6"/>
+          <circle cx="50" cy="50" r="42" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"
+            stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" style="transition:stroke-dashoffset 1s ease;"/>
+        </svg>
+        <span class="score-text" style="color:${color}">${d.overall_score}</span>
+      </div>
+      <div class="ats-score-label">Overall ATS Score — Grade <strong style="color:${color}">${grade}</strong></div>
+    </div>
+
+    <div class="ats-metrics">
+      ${atsMetric('Keywords',d.keyword_score,'var(--blue2)')}
+      ${atsMetric('Formatting',d.formatting_score,'var(--accent2)')}
+      ${atsMetric('Action Verbs',d.action_verb_score,'var(--green2)')}
+      ${atsMetric('Readability',d.readability_score,'var(--amber2)')}
+    </div>
+
+    <div class="ats-section">
+      <div class="ats-section-title">✅ Keywords Found</div>
+      <div>${(d.keywords_found||[]).map(k=>'<span class="ats-tag found">'+escHtml(k)+'</span>').join('')||'<span style="color:var(--muted);font-size:12px;">None detected</span>'}</div>
+    </div>
+
+    <div class="ats-section">
+      <div class="ats-section-title">❌ Keywords Missing</div>
+      <div>${(d.keywords_missing||[]).map(k=>'<span class="ats-tag missing">'+escHtml(k)+'</span>').join('')||'<span style="color:var(--green2);font-size:12px;">None — excellent coverage!</span>'}</div>
+    </div>
+
+    ${(d.weak_phrases||[]).length ? `
+    <div class="ats-section">
+      <div class="ats-section-title">⚠️ Weak Phrases</div>
+      <div>${d.weak_phrases.map(p=>'<span class="ats-tag missing">'+escHtml(p)+'</span>').join('')}</div>
+    </div>` : ''}
+
+    <div class="ats-section">
+      <div class="ats-section-title">💡 Suggestions</div>
+      <ul class="ats-suggestion-list">${(d.suggestions||[]).map(s=>'<li>'+escHtml(s)+'</li>').join('')}</ul>
+    </div>
+
+    <div class="ats-section">
+      <div class="ats-section-title">📋 One Page</div>
+      <div style="font-size:13px;font-weight:600;">
+        ${d.one_page
+          ? '<span style="color:var(--green2);">✓ Yes — fits on one page</span>'
+          : '<span style="color:var(--red2);">✗ No — resume is too long</span>'}
+      </div>
+    </div>
+  `;
+}
+
+function atsMetric(label,score,color){
+  return `<div class="ats-metric">
+    <div class="ats-metric-label">${label}</div>
+    <div class="ats-metric-value" style="color:${score>=70?color:'var(--red2)'}">${score}<span style="font-size:11px;color:var(--muted);font-weight:500">/100</span></div>
+    <div class="ats-metric-bar"><div class="ats-metric-fill" style="width:${score}%;background:${color}"></div></div>
+  </div>`;
+}
+</script>
+</body>
+</html>
